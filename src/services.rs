@@ -8,48 +8,9 @@ use sqlx::{self, FromRow};
 use crate::AppState;
 
 #[derive(Serialize, FromRow)]
-struct User {
-    id: i32,
-    first_name: String,
-    last_name: String,
-}
-
-#[derive(Serialize, FromRow)]
 struct Message {
     id: i32,
-    message: String,
-}
-
-#[derive(Serialize, FromRow)]
-struct Article {
-    id: i32,
-    title: String,
-    content: String,
-    created_by: i32,
-}
-
-#[derive(Deserialize)]
-pub struct CreateArticleBody {
-    pub title: String,
-    pub content: String,
-}
-
-#[derive(Deserialize)]
-pub struct IncommingMessage {
-    pub test: String,
-}
-
-#[get("/users")]
-pub async fn fetch_users(state: Data<AppState>) -> impl Responder {
-    // "GET /users".to_string()
-
-    match sqlx::query_as::<_, User>("SELECT id, first_name, last_name FROM users")
-        .fetch_all(&state.db)
-        .await
-    {
-        Ok(users) => HttpResponse::Ok().json(users),
-        Err(_) => HttpResponse::NotFound().json("No users found"),
-    }
+    message:String,
 }
 
 #[get("/api/get/messages")]
@@ -60,60 +21,7 @@ pub async fn fetch_messages(state: Data<AppState>) -> impl Responder {
         .fetch_all(&state.db)
         .await
     {
-        Ok(messages) => HttpResponse::Ok().json(messages),
-        Err(_) => HttpResponse::NotFound().json("No messages found"),
-    }
-}
-
-#[get("/users/{id}/articles")]
-pub async fn fetch_user_articles(state: Data<AppState>, path: Path<i32>) -> impl Responder {
-    let id: i32 = path.into_inner();
-    // format!("GET /users/{id}/articles")
-
-    match sqlx::query_as::<_, Article>(
-        "SELECT id, title, content, created_by FROM articles WHERE created_by = $1"
-    )
-        .bind(id)
-        .fetch_all(&state.db)
-        .await
-    {
-        Ok(articles) => HttpResponse::Ok().json(articles),
-        Err(_) => HttpResponse::NotFound().json("No articles found"),
-    }
-}
-
-#[post("/users/{id}/articles")]
-pub async fn create_user_article(state: Data<AppState>, path: Path<i32>, body: Json<CreateArticleBody>) -> impl Responder {
-    let id: i32 = path.into_inner();
-    // format!("POST /users/{id}/articles")
-
-    match sqlx::query_as::<_, Article>(
-        "INSERT INTO articles (title, content, created_by) VALUES ($1, $2, $3) RETURNING id, title, content, created_by"
-    )
-        .bind(body.title.to_string())
-        .bind(body.content.to_string())
-        .bind(id)
-        .fetch_one(&state.db)
-        .await
-    {
-        Ok(article) => HttpResponse::Ok().json(article),
-        Err(_) => HttpResponse::InternalServerError().json("Failed to create user article"),
-    }
-}
-
-#[post("/api/post/message")]
-pub async fn post_message(state: Data<AppState>, body: Json<IncommingMessage>) -> impl Responder {
-    //let id: i32 = path.into_inner();
-    // format!("POST /users/{id}/articles")
-    print!("{}",body.test.to_string());
-    match sqlx::query_as::<_, Message>(
-        "INSERT INTO messages (message) VALUES ($1) RETURNING id, message"
-    )
-        .bind(body.test.to_string())
-        .fetch_one(&state.db)
-        .await
-    {
-        Ok(_) => HttpResponse::Ok().json("Received okay response"),
-        Err(_) => HttpResponse::InternalServerError().json("Failed to create message"),
+        Ok(data) => HttpResponse::Ok().json(data),
+        Err(_) => HttpResponse::NotFound().json("No users found"),
     }
 }
