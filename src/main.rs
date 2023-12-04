@@ -25,7 +25,7 @@ async fn main() -> std::io::Result<()> {
             .service(fetch_messages)
             .service(post_message)
     })
-    .bind(("127.0.0.1", 6000))?
+    .bind(("0.0.0.0", 6000))?
     .run()
     .await
 }
