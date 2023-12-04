@@ -3,7 +3,7 @@ use dotenv::dotenv;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 mod services;
-use services::{fetch_messages, post_message};
+use services::{fetch_messages, post_message, test_connection};
 
 pub struct AppState {
     db: Pool<Postgres>
@@ -24,6 +24,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(AppState { db: pool.clone() }))
             .service(fetch_messages)
             .service(post_message)
+            .service(test_connection)
     })
     .bind(("0.0.0.0", 6000))?
     .run()

@@ -44,3 +44,8 @@ pub async fn post_message(state: Data<AppState>, body: Json<NewMessage>) -> impl
         Err(_) => HttpResponse::InternalServerError().json("Failed to post message"),
     }
 }
+
+#[get("/api/test_connection")]
+pub async fn test_connection(state: Data<AppState>) -> impl Responder {
+    HttpResponse::Ok().json("Connection appears to be okay")
+}
