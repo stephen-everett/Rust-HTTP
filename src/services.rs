@@ -7,12 +7,14 @@ use serde::{Deserialize, Serialize};
 use sqlx::{self, FromRow,};
 use crate::AppState;
 
+// structure for messages retrieved from DB
 #[derive(Serialize, FromRow)]
 struct Message {
     id: i32,
     message:String,
 }
 
+// structure for messages received from client
 #[derive(Deserialize)]
 pub struct NewMessage {
     pub test: String,
@@ -32,12 +34,8 @@ pub async fn fetch_messages(state: Data<AppState>) -> impl Responder {
 
 #[post("/api/post/message")]
 pub async fn post_message(state: Data<AppState>, body: Json<NewMessage>) -> impl Responder {
-
-    match sqlx::query_as::<_, Message>(
-        "INSERT INTO messages(message) VALUES($1)"
-    )
-        .bind(body.test.to_string())
-        .fetch_optional(&state.db)
+    match sqlx::query!("INSERT INTO messages(message) VALUES($1)", &body.test)
+        .execute(&state.db)
         .await
     {
         Ok(_) => HttpResponse::Ok().json("successfully posted new message"),
