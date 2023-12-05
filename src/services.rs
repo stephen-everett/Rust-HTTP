@@ -46,6 +46,6 @@ pub async fn post_message(state: Data<AppState>, body: Json<NewMessage>) -> impl
 }
 
 #[get("/api/test_connection")]
-pub async fn test_connection(state: Data<AppState>) -> impl Responder {
+pub async fn test_connection(_state: Data<AppState>) -> impl Responder {
     HttpResponse::Ok().json("Connection appears to be okay")
 }
