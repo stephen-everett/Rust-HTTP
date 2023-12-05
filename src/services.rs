@@ -4,7 +4,7 @@ use actix_web::{
     Responder, HttpResponse
 };
 use serde::{Deserialize, Serialize};
-use sqlx::{self, FromRow};
+use sqlx::{self, FromRow,};
 use crate::AppState;
 
 #[derive(Serialize, FromRow)]
@@ -46,6 +46,17 @@ pub async fn post_message(state: Data<AppState>, body: Json<NewMessage>) -> impl
 }
 
 #[get("/api/test_connection")]
-pub async fn test_connection(_state: Data<AppState>) -> impl Responder {
+pub async fn test_connection() -> impl Responder {
     HttpResponse::Ok().json("Connection appears to be okay")
+}
+
+#[get("/api/messages/clear")]
+pub async fn clear_messages(state:Data<AppState>) -> impl Responder {
+    match sqlx::query!("DELETE FROM messages")
+        .execute(&state.db)
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().json("Messages have been cleared"),
+        Err(_) => HttpResponse::InternalServerError().json("Failed to clear messages"),
+    }
 }
