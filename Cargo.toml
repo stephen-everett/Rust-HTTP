@@ -10,3 +10,5 @@ actix-web = "4"
 sqlx = { version = "0.7", features = [ "runtime-tokio", "tls-native-tls", "postgres"] }
 dotenv = "0.15.0"
 serde = "1.0.193"
+rand = "0.8.5"
+futures = "0.3.29"
