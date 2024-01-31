@@ -1,11 +1,17 @@
 use actix_web::{
     get, post,
-    web::{Data, Json},
+    web::{Data, Json, ReqData},
     Responder, HttpResponse, web
 };
+use actix_web_httpauth::extractors::basic::BasicAuth;
+use argonautica::{Hasher, Verifier};
+use hmac::{Hmac, Mac};
+use jwt::SignWithKey;
+use sha2::Sha256;
+
 use serde::{Deserialize, Serialize};
 use sqlx::{self, FromRow,};
-use crate::AppState;
+use crate::{AppState, TokenClaims};
 use rand::Rng;
 
 // structure for messages retrieved from DB
@@ -13,6 +19,38 @@ use rand::Rng;
 struct Message {
     id: i32,
     message:String,
+}
+
+// structure for request when creating user
+#[derive(Deserialize)]
+struct CreateUserBody {
+    user_name: String,
+    first_name:String,
+    last_name:String,
+    email_address:String,
+    phone_number:String,
+    birthdate:String,
+    password:String
+}
+
+// structure to return to client without password
+#[derive(Serialize, FromRow)]
+struct UserNoPassword {
+    id:i32,
+    user_name:String,
+    first_name:String,
+    last_name:String,
+    email_address:String,
+    phone_number:String,
+    birthdate:String
+}
+
+// structure for SQL return for auth user
+#[derive(Serialize,FromRow)]
+struct AuthUser {
+    id:i32,
+    user_name:String,
+    password: String,
 }
 
 // structure for messages received from client
@@ -40,6 +78,83 @@ pub struct ReceiptItem {
 pub struct Lobby {
     lobby_id: i32
 }
+
+#[post("/api/register")]
+async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl Responder {
+    let user: CreateUserBody = body.into_inner();
+
+    let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
+    let mut hasher = Hasher::default();
+    let hash = hasher
+        .with_password(user.password)
+        .with_secret_key(hash_secret)
+        .hash()
+        .unwrap();
+
+    match sqlx::query_as::<_, UserNoPassword>(
+        "INSERT INTO USERS(user_name, first_name, last_name, email_address, phone_number, birthdate, password)
+        VALUES($1,$2,$3,$4,$5,$6,$7)
+        RETURNING id, user_name, first_name, last_name, email_address, phone_number, birthdate"
+    )
+    .bind(user.user_name)
+    .bind(user.first_name)
+    .bind(user.last_name)
+    .bind(user.email_address)
+    .bind(user.phone_number)
+    .bind(user.birthdate) 
+    .bind(hash)
+    .fetch_one(&state.db)
+    .await
+    {
+        Ok(user) => HttpResponse::Ok().json(user),
+        Err(error) => HttpResponse::InternalServerError().json(format!("{:?}", error))
+    }
+}
+
+#[get("/api/auth")]
+async fn basic_auth(state:Data<AppState>, credentials:BasicAuth) -> impl Responder {
+    let jwt_secret:Hmac<Sha256> = Hmac::new_from_slice(
+        std::env::var("JWT_SECRET").expect("JWT_SECRET needs to be set!").as_bytes()).unwrap();
+
+    let user_name = credentials.user_id();
+    let password = credentials.password();
+
+    match password {
+        None => HttpResponse::Unauthorized().json("Must provide username and password!"),
+        Some(pass) => {
+            match sqlx::query_as::<_,AuthUser>(
+                "SELECT id, user_name, password FROM users WHERE user_name = $1",
+            )
+            .bind(user_name.to_string())
+            .fetch_one(&state.db)
+            .await
+            {
+                Ok(user) => {
+                    let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET must be set!");
+                    let mut verifier = Verifier::default();
+                    let is_valid = verifier
+                        .with_hash(user.password)
+                        .with_password(pass)
+                        .with_secret_key(hash_secret)
+                        .verify()
+                        .unwrap();
+                    
+                    if is_valid {
+                        let claims = TokenClaims {id: user.id};
+                        let token_str = claims.sign_with_key(&jwt_secret).unwrap();
+                        HttpResponse::Ok().json(token_str)
+                    }
+                    else {
+                        HttpResponse::Unauthorized().json("Incorrect username or password")
+                    }
+                }
+                Err(error) => HttpResponse::InternalServerError().json(format!("{:?}", error)),
+            }
+        }
+    }
+    
+}
+
 
 // return all messages
 #[get("/api/get/messages")]

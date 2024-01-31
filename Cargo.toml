@@ -6,9 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+actix = "0.13.0"
+chrono = { version = "0.4.22", features = ["serde"] }
 actix-web = "4"
-sqlx = { version = "0.7", features = [ "runtime-tokio", "tls-native-tls", "postgres"] }
+sqlx = { version = "0.7", features = [ "runtime-tokio", "tls-native-tls", "postgres","chrono"] }
 dotenv = "0.15.0"
-serde = "1.0.193"
+serde = {version="1.0.193", features = ["derive"] }
+serde_json = "1.0.86"
 rand = "0.8.5"
 futures = "0.3.29"
+actix-web-httpauth = "0.8.1"
+hmac = "0.12.1"
+jwt = "0.16.0"
+sha2 = "0.10.8"
+argonautica = "0.2.0"
