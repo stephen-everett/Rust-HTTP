@@ -3,7 +3,7 @@ use dotenv::dotenv;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 mod services;
-use services::{fetch_messages, post_message, test_connection, clear_messages, post_receipt, join_lobby,create_user, basic_auth};
+use services::{fetch_messages, post_message, test_connection, clear_messages, post_receipt, join_lobby,create_user, basic_auth,search_user};
 
 
 use actix_web_httpauth::{
@@ -91,6 +91,7 @@ async fn main() -> std::io::Result<()> {
             .service(join_lobby)
             .service(create_user)
             .service(basic_auth)
+            .service(search_user)
     })
     .bind(("0.0.0.0", 6000))?
     .run()

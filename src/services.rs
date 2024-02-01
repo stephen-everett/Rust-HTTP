@@ -13,12 +13,24 @@ use serde::{Deserialize, Serialize};
 use sqlx::{self, FromRow,};
 use crate::{AppState, TokenClaims};
 use rand::Rng;
+use std::io;
 
 // structure for messages retrieved from DB
 #[derive(Serialize, FromRow)]
 struct Message {
     id: i32,
     message:String,
+}
+///
+#[derive(Serialize,FromRow)]
+struct UserSearch{
+    user_name:String,
+    first_name:String,
+    last_name:String
+}
+#[derive(Deserialize)]
+struct searchPram{
+    message:String
 }
 
 // structure for request when creating user
@@ -53,6 +65,7 @@ struct AuthUser {
     password: String,
 }
 
+
 // structure for messages received from client
 #[derive(Deserialize)]
 pub struct NewMessage {
@@ -78,6 +91,7 @@ pub struct ReceiptItem {
 pub struct Lobby {
     lobby_id: i32
 }
+
 
 #[post("/api/register")]
 async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl Responder {
@@ -108,6 +122,27 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
     {
         Ok(user) => HttpResponse::Ok().json(user),
         Err(error) => HttpResponse::InternalServerError().json(format!("{:?}", error))
+    }
+}
+
+///
+#[post("/api/search")]
+pub async fn search_user(state:Data<AppState>,body:Json<searchPram>) -> impl Responder{
+    let mut target = String::new(); 
+    io::stdin()
+        .read_line(&mut target)
+        .expect("Failed to read");
+
+    match sqlx::query_as::<_,UserSearch>(
+    "SELECT user_name, first_name, last_name FROM users WHERE user_name = $1 OR first_name = $1 "
+    )
+    .bind(searchPram.message)
+    .fetch_all(&state.db)
+    .await
+    {
+        Ok(UserSearch) => HttpResponse::Ok().json(UserSearch),
+        Err(_) => HttpResponse::InternalServerError().json("User not found") 
+
     }
 }
 
@@ -258,3 +293,4 @@ pub async fn create_new_lobby(state:Data<AppState>) -> i32 {
     };
     lobby_number
 }
+
