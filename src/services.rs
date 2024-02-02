@@ -28,8 +28,10 @@ struct UserSearch{
     first_name:String,
     last_name:String
 }
+
+// changed from searchPram to SearchParam to fix spelling and to fix warning from Cargo
 #[derive(Deserialize)]
-struct searchPram{
+pub struct SearchParam{
     message:String
 }
 
@@ -127,20 +129,27 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
 
 ///
 #[post("/api/search")]
-pub async fn search_user(state:Data<AppState>,body:Json<searchPram>) -> impl Responder{
+pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Responder{
+    /* 
     let mut target = String::new(); 
     io::stdin()
         .read_line(&mut target)
         .expect("Failed to read");
+    */
 
+    // get search parameter from body
+    let search_param: SearchParam = body.into_inner();
+
+    // query
     match sqlx::query_as::<_,UserSearch>(
     "SELECT user_name, first_name, last_name FROM users WHERE user_name = $1 OR first_name = $1 "
     )
-    .bind(searchPram.message)
+    .bind(search_param.message)
     .fetch_all(&state.db)
     .await
     {
-        Ok(UserSearch) => HttpResponse::Ok().json(UserSearch),
+        //Ok(UserSearch) => HttpResponse::Ok().json(UserSearch),
+        Ok(data) => HttpResponse::Ok().json(data),
         Err(_) => HttpResponse::InternalServerError().json("User not found") 
 
     }
