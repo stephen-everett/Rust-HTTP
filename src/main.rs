@@ -25,6 +25,10 @@ pub struct testVariable {
     id:i32,
 }
 
+pub struct testVariable2 {
+    id:i32,
+}
+
 pub struct AppState {
     db: Pool<Postgres>
 }
