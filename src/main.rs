@@ -21,6 +21,10 @@ use sha2::Sha256;
 
 extern crate argonautica;
 
+pub struct testVariable {
+    id:i32,
+}
+
 pub struct AppState {
     db: Pool<Postgres>
 }
