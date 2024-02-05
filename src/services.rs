@@ -5,7 +5,7 @@ use actix_web::{
 };
 use actix_web_httpauth::extractors::basic::BasicAuth;
 use argonautica::{Hasher, Verifier};
-use hmac::{Hmac, Mac};
+use hmac::{digest::typenum::Integer, Hmac, Mac};
 use jwt::SignWithKey;
 use sha2::Sha256;
 
@@ -14,6 +14,8 @@ use sqlx::{self, error::DatabaseError, postgres::PgDatabaseError, Database, From
 use crate::{AppState, TokenClaims};
 use rand::Rng;
 use std::io;
+
+use uuid::Uuid;
 
 // structure for messages retrieved from DB
 #[derive(Serialize, FromRow)]
@@ -24,7 +26,7 @@ struct Message {
 ///
 #[derive(Serialize,FromRow)]
 struct UserSearch{
-    user_name:String,
+    username:String,
     first_name:String,
     last_name:String
 }
@@ -38,20 +40,21 @@ pub struct SearchParam{
 // structure for request when creating user
 #[derive(Deserialize)]
 struct CreateUserBody {
-    user_name: String,
+    username: String,
     first_name:String,
     last_name:String,
     email_address:String,
     phone_number:String,
     birthdate:String,
-    password:String
+    password:String,
+    pin:i32
 }
 
 // structure to return to client without password
 #[derive(Serialize, FromRow)]
 struct UserNoPassword {
-    id:i32,
-    user_name:String,
+    id:String,
+    username:String,
     first_name:String,
     last_name:String,
     email_address:String,
@@ -94,46 +97,155 @@ pub struct Lobby {
     lobby_id: i32
 }
 
+#[derive(FromRow)]
+pub struct CountStruct {
+    count:i64
+}
 
 #[post("/api/register")]
 async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl Responder {
     let user: CreateUserBody = body.into_inner();
 
-    let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
-    let mut hasher = Hasher::default();
-    let hash = hasher
-        .with_password(user.password)
-        .with_secret_key(hash_secret)
-        .hash()
-        .unwrap();
+    // bools to keep track of potential errors
+    let mut duplicate_email = false;
+    let mut duplicate_phone = false;
+    let mut duplicate_username = false;
+    let mut error = false;
+    let mut general_error = false;
 
-    match sqlx::query_as::<_, UserNoPassword>(
-        "INSERT INTO USERS(user_name, first_name, last_name, email_address, phone_number, birthdate, password)
-        VALUES($1,$2,$3,$4,$5,$6,$7)
-        RETURNING id, user_name, first_name, last_name, email_address, phone_number, birthdate"
+    // container for uniqueness constraint errors
+    let mut error_list: Vec<String> = Vec::new();
+
+
+    
+    /**************************************************
+        Uniqueness Constrain Checks
+     **************************************************/
+
+     // Check email
+    match sqlx::query_as::<_,CountStruct>(
+        "SELECT COUNT(*) FROM users WHERE LOWER(email_address) = $1"
     )
-    .bind(user.user_name)
-    .bind(user.first_name)
-    .bind(user.last_name)
-    .bind(user.email_address)
-    .bind(user.phone_number)
-    .bind(user.birthdate) 
-    .bind(hash)
+    .bind(user.email_address.to_lowercase())
     .fetch_one(&state.db)
     .await
     {
-        Ok(user) => HttpResponse::Ok().json(user),
-        Err(error) => {
-            match error {
-                DatabaseError => {
-                    println!("database error");
-                    println!("{:?}", DatabaseError);
-                },
-                _ => println!("Get me outta here")
+        Ok(count) => {
+            if count.count > 0 {
+                duplicate_email = true;
+                error = true;
             }
-            //println!("{:?}", error);
-            HttpResponse::Conflict().json("Problem")
-            
+        },
+        Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking email:\n {:?}", err))
+    }
+
+    // Check phone number
+    match sqlx::query_as::<_,CountStruct>(
+        "SELECT COUNT(*) FROM users WHERE LOWER(phone_number) = $1"
+    )
+    .bind(user.phone_number.to_lowercase())
+    .fetch_one(&state.db)
+    .await
+    {
+        Ok(count) => {
+            if count.count > 0 {
+                duplicate_phone = true;
+                error = true;
+            }
+        },
+        Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking phone number:\n {:?}", err))
+    }
+
+    // Check username
+    match sqlx::query_as::<_,CountStruct>(
+        "SELECT COUNT(*) FROM user_profile WHERE LOWER(username) = $1"
+    )
+    .bind(user.username.to_lowercase())
+    .fetch_one(&state.db)
+    .await
+    {
+        Ok(count) => {
+            if count.count > 0 {
+                duplicate_username = true;
+                error = true;
+            }
+        },
+        Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking username:\n {:?}", err))
+    }
+
+    /*******************************************************************************************************************************************
+     ******************************************************************************************************************************************/
+
+    // Return errors if there were any with uniqueness constrain checks
+    if duplicate_email {
+        error_list.push("email".to_string());
+    }
+    if duplicate_phone {
+        error_list.push("phone".to_string());
+    }
+    if duplicate_username {
+        error_list.push("username".to_string());
+    }
+    if error {
+        return HttpResponse::Conflict().json(error_list)
+    }
+    // Add new user to DB
+    else {
+        // Generate user ID and hash the password
+        let id = Uuid::new_v4().to_string();
+        let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
+        let mut hasher = Hasher::default();
+        let hash = hasher
+            .with_password(user.password)
+            .with_secret_key(hash_secret)
+            .hash()
+            .unwrap();
+        
+        // insert user into user table
+        match sqlx::query_as::<_, UserNoPassword>(
+            "INSERT INTO USERS(user_id, first_name, last_name, email_address, phone_number, birthdate, password, pin)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8)"
+        )
+        .bind(id.clone())
+        .bind(user.first_name.clone())
+        .bind(user.last_name.clone())
+        .bind(user.email_address)
+        .bind(user.phone_number)
+        .bind(user.birthdate) 
+        .bind(hash)
+        .bind(user.pin)
+        .fetch_one(&state.db)
+        .await
+        {
+            Ok(_) => (),
+            Err(err) => {
+                error_list.push(err.to_string());
+            }
+        }
+
+        // insert into user_profile table
+        match sqlx::query_as::<_, UserNoPassword>(
+            "INSERT INTO user_profile(user_id, username, profile_first_name, profile_last_name) VALUES($1,$2,$3,$4)"
+        )
+        .bind(id)
+        .bind(user.username)
+        .bind(user.first_name)
+        .bind(user.last_name)
+        .fetch_one(&state.db)
+        .await
+        {
+            Ok(_) => (),
+            Err(err) => {
+                error_list.push(err.to_string());
+            }
+        }
+
+        // return responses
+        if general_error {
+            return HttpResponse::InternalServerError().json(format!("Something went wrong:\n ${:?}", error_list))
+        }
+        else {
+            return HttpResponse::Ok().json(format!("User added"))
         }
     }
 }
