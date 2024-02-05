@@ -10,7 +10,7 @@ use jwt::SignWithKey;
 use sha2::Sha256;
 
 use serde::{Deserialize, Serialize};
-use sqlx::{self, FromRow,};
+use sqlx::{self, error::DatabaseError, postgres::PgDatabaseError, Database, FromRow};
 use crate::{AppState, TokenClaims};
 use rand::Rng;
 use std::io;
@@ -123,13 +123,26 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
     .await
     {
         Ok(user) => HttpResponse::Ok().json(user),
-        Err(error) => HttpResponse::InternalServerError().json(format!("{:?}", error))
+        Err(error) => {
+            match error {
+                DatabaseError => {
+                    println!("database error");
+                    println!("{:?}", DatabaseError);
+                },
+                _ => println!("Get me outta here")
+            }
+            //println!("{:?}", error);
+            HttpResponse::Conflict().json("Problem")
+            
+        }
     }
 }
 
 ///
 #[post("/api/search")]
 pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Responder{
+    
+    // I think this is expecting user input from the console.
     /* 
     let mut target = String::new(); 
     io::stdin()
