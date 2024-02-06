@@ -93,6 +93,7 @@ async fn main() -> std::io::Result<()> {
             .service(basic_auth)
             .service(search_user)
     })
+    .keep_alive(std::time::Duration::from_secs(75))
     .bind(("0.0.0.0", 6000))?
     .run()
     .await
