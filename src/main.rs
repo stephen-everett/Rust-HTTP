@@ -93,7 +93,7 @@ async fn main() -> std::io::Result<()> {
             .service(basic_auth)
             .service(search_user)
     })
-    .keep_alive(std::time::Duration::from_secs(75))
+    .keep_alive(std::time::Duration::from_secs(75)) // timeout set because of errors from Nginx. 75 seconds might be long
     .bind(("0.0.0.0", 6000))?
     .run()
     .await

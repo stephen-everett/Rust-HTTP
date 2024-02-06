@@ -104,6 +104,12 @@ pub struct CountStruct {
 
 #[post("/api/register")]
 async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl Responder {
+
+    // TODO: The implicit checks at the beginning of the function might be too much work.
+    // When executing the main SQL queries near the bottom of the function, you should be 
+    // able to narrow down what caused the error by matching the error in the match arms
+    // https://www.lpalmieri.com/posts/error-handling-rust/
+    
     let user: CreateUserBody = body.into_inner();
 
     // bools to keep track of potential errors
