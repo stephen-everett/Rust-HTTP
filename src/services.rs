@@ -26,6 +26,7 @@ struct Message {
 ///
 #[derive(Serialize,FromRow)]
 struct UserSearch{
+    user_id: String,
     username:String,
     first_name:String,
     last_name:String
@@ -105,11 +106,12 @@ pub struct CountStruct {
 #[post("/api/register")]
 async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl Responder {
 
-    // TODO: The implicit checks at the beginning of the function might be too much work.
+    // TODO: The explicit checks at the beginning of the function might be too much work.
     // When executing the main SQL queries near the bottom of the function, you should be 
-    // able to narrow down what caused the error by matching the error in the match arms
+    // able to narrow down what caused the error by matching the error in the match arms. The 
+    // sqlx error is an enum
     // https://www.lpalmieri.com/posts/error-handling-rust/
-    
+
     let user: CreateUserBody = body.into_inner();
 
     // bools to keep track of potential errors
@@ -271,11 +273,13 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
     // get search parameter from body
     let search_param: SearchParam = body.into_inner();
 
+    let search_query = format!("SELECT users.user_id, username, first_name, last_name FROM user_profile JOIN users USING(user_id) WHERE LOWER(username) LIKE \'%{}%\'", search_param.message.to_lowercase());
+    let search_query = search_query.as_str();
     // query
     match sqlx::query_as::<_,UserSearch>(
-    "SELECT user_name, first_name, last_name FROM users WHERE user_name = $1 OR first_name = $1 "
+    search_query
     )
-    .bind(search_param.message)
+    //.bind(search_param.message.to_lowercase())
     .fetch_all(&state.db)
     .await
     {
