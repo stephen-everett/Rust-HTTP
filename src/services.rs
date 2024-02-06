@@ -115,9 +115,9 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
     let user: CreateUserBody = body.into_inner();
 
     // bools to keep track of potential errors
-    let mut duplicate_email = false;
-    let mut duplicate_phone = false;
-    let mut duplicate_username = false;
+    let unique_email: bool = unique_email(state.clone(), user.email_address.clone()).await;
+    let unique_phone: bool = unique_phone(state.clone(), user.phone_number.clone()).await;
+    let unique_username = unique_username(state.clone(), user.username.clone()).await;
     let mut error = false;
     let mut general_error = false;
 
@@ -130,6 +130,7 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
         Uniqueness Constrain Checks
      **************************************************/
 
+    /* 
      // Check email
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM users WHERE LOWER(email_address) = $1"
@@ -146,8 +147,10 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
         },
         Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking email:\n {:?}", err))
     }
+    */
 
     // Check phone number
+    /* 
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM users WHERE LOWER(phone_number) = $1"
     )
@@ -163,7 +166,9 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
         },
         Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking phone number:\n {:?}", err))
     }
+    */
 
+    /* 
     // Check username
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM user_profile WHERE LOWER(username) = $1"
@@ -180,19 +185,23 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
         },
         Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking username:\n {:?}", err))
     }
+    */
 
     /*******************************************************************************************************************************************
      ******************************************************************************************************************************************/
 
     // Return errors if there were any with uniqueness constrain checks
-    if duplicate_email {
+    if !unique_email {
         error_list.push("email".to_string());
+        error = true;
     }
-    if duplicate_phone {
+    if !unique_phone {
         error_list.push("phone".to_string());
+        error = true;
     }
-    if duplicate_username {
+    if !unique_username {
         error_list.push("username".to_string());
+        error = true;
     }
     if error {
         return HttpResponse::Conflict().json(error_list)
@@ -255,6 +264,66 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
         else {
             return HttpResponse::Ok().json(format!("User added"))
         }
+    }
+}
+
+async fn unique_email(state: Data<AppState>, email:String) -> bool {
+    match sqlx::query_as::<_,CountStruct>(
+        "SELECT COUNT(*) FROM users WHERE LOWER(email_address) = $1"
+    )
+    .bind(email.to_lowercase())
+    .fetch_one(&state.db)
+    .await
+    {
+        Ok(count) => {
+            if count.count > 0 {
+                return false
+            }
+            else {
+                return true
+            }
+        },
+        Err(_) => return false
+    }
+}
+
+async fn unique_phone(state: Data<AppState>, phone_number:String) -> bool {
+    match sqlx::query_as::<_,CountStruct>(
+        "SELECT COUNT(*) FROM users WHERE LOWER(phone_number) = $1"
+    )
+    .bind(phone_number.to_lowercase())
+    .fetch_one(&state.db)
+    .await
+    {
+        Ok(count) => {
+            if count.count > 0 {
+                return false;
+            }
+            else {
+                return true;
+            }
+        },
+        Err(_) => return false
+    }
+}
+
+async fn unique_username(state: Data<AppState>, username:String) -> bool{
+    match sqlx::query_as::<_,CountStruct>(
+        "SELECT COUNT(*) FROM user_profile WHERE LOWER(username) = $1"
+    )
+    .bind(username.to_lowercase())
+    .fetch_one(&state.db)
+    .await
+    {
+        Ok(count) => {
+            if count.count > 0 {
+                return false
+            }
+            else {
+                return true
+            }
+        },
+        Err(err) => return false
     }
 }
 
