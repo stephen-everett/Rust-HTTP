@@ -54,7 +54,7 @@ struct CreateUserBody {
 // structure to return to client without password
 #[derive(Serialize, FromRow)]
 struct UserNoPassword {
-    id:String,
+    user_id:String,
     username:String,
     first_name:String,
     last_name:String,
@@ -115,9 +115,9 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
     let user: CreateUserBody = body.into_inner();
 
     // bools to keep track of potential errors
-    let unique_email: bool = unique_email(state.clone(), user.email_address.clone()).await;
-    let unique_phone: bool = unique_phone(state.clone(), user.phone_number.clone()).await;
-    let unique_username = unique_username(state.clone(), user.username.clone()).await;
+    //let unique_email: bool = unique_email(state.clone(), user.email_address.clone()).await;
+    //let unique_phone: bool = unique_phone(state.clone(), user.phone_number.clone()).await;
+    //let unique_username = unique_username(state.clone(), user.username.clone()).await;
     let mut error = false;
     let mut general_error = false;
 
@@ -125,81 +125,16 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
     let mut error_list: Vec<String> = Vec::new();
 
 
-    
-    /**************************************************
-        Uniqueness Constrain Checks
-     **************************************************/
-
-    /* 
-     // Check email
-    match sqlx::query_as::<_,CountStruct>(
-        "SELECT COUNT(*) FROM users WHERE LOWER(email_address) = $1"
-    )
-    .bind(user.email_address.to_lowercase())
-    .fetch_one(&state.db)
-    .await
-    {
-        Ok(count) => {
-            if count.count > 0 {
-                duplicate_email = true;
-                error = true;
-            }
-        },
-        Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking email:\n {:?}", err))
-    }
-    */
-
-    // Check phone number
-    /* 
-    match sqlx::query_as::<_,CountStruct>(
-        "SELECT COUNT(*) FROM users WHERE LOWER(phone_number) = $1"
-    )
-    .bind(user.phone_number.to_lowercase())
-    .fetch_one(&state.db)
-    .await
-    {
-        Ok(count) => {
-            if count.count > 0 {
-                duplicate_phone = true;
-                error = true;
-            }
-        },
-        Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking phone number:\n {:?}", err))
-    }
-    */
-
-    /* 
-    // Check username
-    match sqlx::query_as::<_,CountStruct>(
-        "SELECT COUNT(*) FROM user_profile WHERE LOWER(username) = $1"
-    )
-    .bind(user.username.to_lowercase())
-    .fetch_one(&state.db)
-    .await
-    {
-        Ok(count) => {
-            if count.count > 0 {
-                duplicate_username = true;
-                error = true;
-            }
-        },
-        Err(err) => return HttpResponse::InternalServerError().json(format!("Something went wrong checking username:\n {:?}", err))
-    }
-    */
-
-    /*******************************************************************************************************************************************
-     ******************************************************************************************************************************************/
-
     // Return errors if there were any with uniqueness constrain checks
-    if !unique_email {
+    if !unique_email(state.clone(), user.email_address.clone()).await {
         error_list.push("email".to_string());
         error = true;
     }
-    if !unique_phone {
+    if !unique_phone(state.clone(), user.phone_number.clone()).await {
         error_list.push("phone".to_string());
         error = true;
     }
-    if !unique_username {
+    if !unique_username(state.clone(), user.username.clone()).await {
         error_list.push("username".to_string());
         error = true;
     }
@@ -219,7 +154,7 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
             .unwrap();
         
         // insert user into user table
-        match sqlx::query_as::<_, UserNoPassword>(
+        match sqlx::query(
             "INSERT INTO USERS(user_id, first_name, last_name, email_address, phone_number, birthdate, password, pin)
             VALUES($1,$2,$3,$4,$5,$6,$7,$8)"
         )
@@ -513,5 +448,24 @@ pub async fn create_new_lobby(state:Data<AppState>) -> i32 {
         Err(_) => 0
     };
     lobby_number
+}
+
+#[get("/api/test_auth")]
+async fn test_auth() -> impl Responder {
+   HttpResponse::Ok().json("Seems to work")
+}
+
+#[get("/api/all_users")]
+async fn get_all_users(state: Data<AppState>) -> impl Responder {
+    let query = "SELECT users.user_id, username, first_name, last_name, email_address, phone_number, birthdate FROM users JOIN user_profile USING(user_id)";
+    
+    match sqlx::query_as::<_,UserNoPassword>(
+        query
+    )
+    .fetch_all(&state.db)
+    .await {
+        Ok(data) => HttpResponse::Ok().json(data),
+        Err(err) => HttpResponse::InternalServerError().json(format!("{:?}", err))
+    }
 }
 

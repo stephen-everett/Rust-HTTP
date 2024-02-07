@@ -1,9 +1,12 @@
-use actix_web::{web::Data, App, HttpServer, dev::ServiceRequest, error::Error, HttpMessage};
+use actix_web::{web, web::Data, App, HttpServer, dev::ServiceRequest, error::Error, HttpMessage};
 use dotenv::dotenv;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 mod services;
-use services::{fetch_messages, post_message, test_connection, clear_messages, post_receipt, join_lobby,create_user, basic_auth,search_user};
+use services::{
+    fetch_messages, post_message, test_connection, clear_messages, 
+    post_receipt, join_lobby,create_user, basic_auth,search_user,
+    test_auth, get_all_users};
 
 
 use actix_web_httpauth::{
@@ -92,6 +95,12 @@ async fn main() -> std::io::Result<()> {
             .service(create_user)
             .service(basic_auth)
             .service(search_user)
+            .service(
+                web::scope("")
+                .wrap(bearer_middleware)
+                .service(test_auth)
+                .service(get_all_users)
+            )
     })
     .keep_alive(std::time::Duration::from_secs(75)) // timeout set because of errors from Nginx. 75 seconds might be long
     .bind(("0.0.0.0", 6000))?
