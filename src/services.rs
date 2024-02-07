@@ -396,7 +396,15 @@ async fn basic_auth(state:Data<AppState>, credentials:BasicAuth) -> impl Respond
                         HttpResponse::Unauthorized().json("Incorrect username or password")
                     }
                 }
-                Err(error) => HttpResponse::InternalServerError().json(format!("{:?}", error)),
+                Err(err) =>{
+                    match err {
+                        sqlx::Error::RowNotFound => {
+                            HttpResponse::Unauthorized().json("Incorrect username or password")
+                        },
+                        _ => HttpResponse::InternalServerError().json(format!("{:?}", err)),
+                    }
+                }
+                //Err(error) => HttpResponse::InternalServerError().json(format!("{:?}", error)),
             }
         }
     }
