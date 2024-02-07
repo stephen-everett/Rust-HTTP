@@ -28,7 +28,7 @@ pub struct AppState {
 // structure for bearer token. Can contain more information (such as permissions)
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TokenClaims {
-    id:i32,
+    user_id:String,
 }
 
 // middleware to validate token

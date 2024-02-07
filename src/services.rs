@@ -66,8 +66,8 @@ struct UserNoPassword {
 // structure for SQL return for auth user
 #[derive(Serialize,FromRow)]
 struct AuthUser {
-    id:i32,
-    user_name:String,
+    user_id:String,
+    username:String,
     password: String,
 }
 
@@ -364,16 +364,16 @@ async fn basic_auth(state:Data<AppState>, credentials:BasicAuth) -> impl Respond
     let jwt_secret:Hmac<Sha256> = Hmac::new_from_slice(
         std::env::var("JWT_SECRET").expect("JWT_SECRET needs to be set!").as_bytes()).unwrap();
 
-    let user_name = credentials.user_id();
+    let username = credentials.user_id();
     let password = credentials.password();
 
     match password {
         None => HttpResponse::Unauthorized().json("Must provide username and password!"),
         Some(pass) => {
             match sqlx::query_as::<_,AuthUser>(
-                "SELECT id, user_name, password FROM users WHERE user_name = $1",
+                "SELECT users.user_id, username, password FROM users JOIN user_profile USING (user_id) WHERE username = $1",
             )
-            .bind(user_name.to_string())
+            .bind(username.to_string())
             .fetch_one(&state.db)
             .await
             {
@@ -388,7 +388,7 @@ async fn basic_auth(state:Data<AppState>, credentials:BasicAuth) -> impl Respond
                         .unwrap();
                     
                     if is_valid {
-                        let claims = TokenClaims {id: user.id};
+                        let claims = TokenClaims {user_id: user.user_id};
                         let token_str = claims.sign_with_key(&jwt_secret).unwrap();
                         HttpResponse::Ok().json(token_str)
                     }
