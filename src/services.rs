@@ -476,21 +476,13 @@ async fn delete_user(state: Data<AppState>, claims: Option<web::ReqData<TokenCla
     match claims {
         Some(claims) => {
             let query = "DELETE FROM users WHERE user_id = $1";
-    
-            match sqlx::query(
-                query
-            )
-            .bind(claims.user_id.to_string())
-            .fetch_one(&state.db)
-            .await {
-                Ok(_) => HttpResponse::Ok().json(format!("User has been deleted")),
-                Err(err) => {
-                    match err {
-                        sqlx::Error::RowNotFound => HttpResponse::Ok().json(format!("User has been deleted")),
-                        _ => HttpResponse::InternalServerError().json(format!("Something went wrong: {:?}", err))
-                    }
+            match sqlx::query(query)
+                .bind(claims.user_id.to_string())
+                .execute(&state.db)
+                .await {
+                    Ok(rows) => HttpResponse::Ok().json(format!("User has been deleted: {:?}", rows.rows_affected())),
+                    Err(err) => HttpResponse::InternalServerError().json(format!("Something went wrong: {:?}", err))
                 }
-            }
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
