@@ -10,10 +10,11 @@ use jwt::SignWithKey;
 use sha2::Sha256;
 
 use serde::{Deserialize, Serialize};
-use sqlx::{self, error::DatabaseError, postgres::PgDatabaseError, Database, FromRow};
+use sqlx::{self, error::DatabaseError, postgres::PgDatabaseError, Database, FromRow, Row};
 use crate::{AppState, TokenClaims};
 use rand::Rng;
 use std::io;
+
 
 use uuid::Uuid;
 
@@ -98,7 +99,7 @@ pub struct Lobby {
     lobby_id: i32
 }
 
-#[derive(FromRow)]
+#[derive(FromRow, Serialize)]
 pub struct CountStruct {
     count:i64
 }
@@ -175,9 +176,9 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
             }
         }
 
-        // insert into user_profile table
+        // insert into user_profiles table
         match sqlx::query_as::<_, UserNoPassword>(
-            "INSERT INTO user_profile(user_id, username, profile_first_name, profile_last_name) VALUES($1,$2,$3,$4)"
+            "INSERT INTO user_profiles(user_id, username, profile_first_name, profile_last_name) VALUES($1,$2,$3,$4)"
         )
         .bind(id)
         .bind(user.username)
@@ -244,7 +245,7 @@ async fn unique_phone(state: Data<AppState>, phone_number:String) -> bool {
 
 async fn unique_username(state: Data<AppState>, username:String) -> bool{
     match sqlx::query_as::<_,CountStruct>(
-        "SELECT COUNT(*) FROM user_profile WHERE LOWER(username) = $1"
+        "SELECT COUNT(*) FROM user_profiles WHERE LOWER(username) = $1"
     )
     .bind(username.to_lowercase())
     .fetch_one(&state.db)
@@ -277,7 +278,7 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
     // get search parameter from body
     let search_param: SearchParam = body.into_inner();
 
-    let search_query = format!("SELECT users.user_id, username, first_name, last_name FROM user_profile JOIN users USING(user_id) WHERE LOWER(username) LIKE \'%{}%\'", search_param.message.to_lowercase());
+    let search_query = format!("SELECT users.user_id, username, first_name, last_name FROM user_profiles JOIN users USING(user_id) WHERE LOWER(username) LIKE \'%{}%\'", search_param.message.to_lowercase());
     let search_query = search_query.as_str();
     // query
     match sqlx::query_as::<_,UserSearch>(
@@ -306,7 +307,7 @@ async fn basic_auth(state:Data<AppState>, credentials:BasicAuth) -> impl Respond
         None => HttpResponse::Unauthorized().json("Must provide username and password!"),
         Some(pass) => {
             match sqlx::query_as::<_,AuthUser>(
-                "SELECT users.user_id, username, password FROM users JOIN user_profile USING (user_id) WHERE username = $1",
+                "SELECT users.user_id, username, password FROM users JOIN user_profiles USING (user_id) WHERE username = $1",
             )
             .bind(username.to_string())
             .fetch_one(&state.db)
@@ -457,7 +458,7 @@ async fn test_auth() -> impl Responder {
 
 #[get("/api/all_users")]
 async fn get_all_users(state: Data<AppState>) -> impl Responder {
-    let query = "SELECT users.user_id, username, first_name, last_name, email_address, phone_number, birthdate FROM users JOIN user_profile USING(user_id)";
+    let query = "SELECT users.user_id, username, first_name, last_name, email_address, phone_number, birthdate FROM users JOIN user_profiles USING(user_id)";
     
     match sqlx::query_as::<_,UserNoPassword>(
         query
@@ -467,5 +468,32 @@ async fn get_all_users(state: Data<AppState>) -> impl Responder {
         Ok(data) => HttpResponse::Ok().json(data),
         Err(err) => HttpResponse::InternalServerError().json(format!("{:?}", err))
     }
+}
+
+#[get("/api/delete_user")]
+async fn delete_user(state: Data<AppState>, claims: Option<web::ReqData<TokenClaims>>) -> impl Responder {
+    
+    match claims {
+        Some(claims) => {
+            let query = "DELETE FROM users WHERE user_id = $1";
+    
+            match sqlx::query(
+                query
+            )
+            .bind(claims.user_id.to_string())
+            .fetch_one(&state.db)
+            .await {
+                Ok(_) => HttpResponse::Ok().json(format!("User has been deleted")),
+                Err(err) => {
+                    match err {
+                        sqlx::Error::RowNotFound => HttpResponse::Ok().json(format!("User has been deleted")),
+                        _ => HttpResponse::InternalServerError().json(format!("Something went wrong: {:?}", err))
+                    }
+                }
+            }
+        },
+        None => HttpResponse::InternalServerError().json("Something was wrong with token")
+    }
+
 }
 

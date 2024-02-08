@@ -6,7 +6,7 @@ mod services;
 use services::{
     fetch_messages, post_message, test_connection, clear_messages, 
     post_receipt, join_lobby,create_user, basic_auth,search_user,
-    test_auth, get_all_users};
+    test_auth, get_all_users, delete_user};
 
 
 use actix_web_httpauth::{
@@ -100,6 +100,7 @@ async fn main() -> std::io::Result<()> {
                 .wrap(bearer_middleware)
                 .service(test_auth)
                 .service(get_all_users)
+                .service(delete_user)
             )
     })
     .keep_alive(std::time::Duration::from_secs(75)) // timeout set because of errors from Nginx. 75 seconds might be long
