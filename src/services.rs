@@ -49,7 +49,7 @@ struct CreateUserBody {
     phone_number:String,
     birthdate:String,
     password:String,
-    pin:i32
+    pin:String
 }
 
 // structure to return to client without password
