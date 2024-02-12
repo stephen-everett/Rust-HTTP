@@ -2,11 +2,15 @@ use actix_web::{web, web::Data, App, HttpServer, dev::ServiceRequest, error::Err
 use dotenv::dotenv;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
+mod endpoints;
+use endpoints::auth::{
+    create_user,basic_auth,delete_user,test_auth};
+
 mod services;
 use services::{
     fetch_messages, post_message, test_connection, clear_messages, 
-    post_receipt, join_lobby,create_user, basic_auth,search_user,
-    test_auth, get_all_users, delete_user};
+    post_receipt, join_lobby,search_user,
+    get_all_users, };
 
 
 use actix_web_httpauth::{
@@ -16,6 +20,7 @@ use actix_web_httpauth::{
     },
     middleware::HttpAuthentication,
 };
+
 
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
