@@ -18,13 +18,16 @@ pub mod profile;
 
 use uuid::Uuid;
 
+/* 
 // structure for messages retrieved from DB
 #[derive(Serialize, FromRow)]
 struct Message {
     id: i32,
     message:String,
 }
-///
+*/
+
+/* 
 #[derive(Serialize,FromRow)]
 struct UserSearch{
     user_id: String,
@@ -32,13 +35,17 @@ struct UserSearch{
     first_name:String,
     last_name:String
 }
+*/
 
+/* 
 // changed from searchPram to SearchParam to fix spelling and to fix warning from Cargo
 #[derive(Deserialize)]
 pub struct SearchParam{
     message:String
 }
+*/
 
+/* 
 // structure for request when creating user
 #[derive(Deserialize)]
 struct CreateUserBody {
@@ -51,7 +58,8 @@ struct CreateUserBody {
     password:String,
     pin:String
 }
-
+*/
+/* 
 // structure to return to client without password
 #[derive(Serialize, FromRow)]
 struct UserNoPassword {
@@ -63,22 +71,26 @@ struct UserNoPassword {
     phone_number:String,
     birthdate:String
 }
+*/
 
 
-
+/* 
 // structure for messages received from client
 #[derive(Deserialize)]
 pub struct NewMessage {
     pub test: String,
 }
+*/
 
+/*
 #[derive(Deserialize)]
 pub struct MenuItem {
     pub sku: i32,
     pub name: String,
     pub quantity: i32
 }
-
+*/
+/*
 #[derive(Serialize, FromRow)]
 pub struct ReceiptItem {
     pub lobby_id: i32,
@@ -86,13 +98,16 @@ pub struct ReceiptItem {
     pub name: String,
     pub quantity: i32
 }
+*/
 
+/* 
 #[derive(Serialize, Deserialize)]
 pub struct Lobby {
     lobby_id: i32
 }
+*/
 
-
+/* 
 ///
 #[post("/api/search")]
 pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Responder{
@@ -124,8 +139,9 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
 
     }
 }
+*/
 
-
+/* 
 
 // return all messages
 #[get("/api/get/messages")]
@@ -245,3 +261,4 @@ async fn get_all_users(state: Data<AppState>) -> impl Responder {
         Err(err) => HttpResponse::InternalServerError().json(format!("{:?}", err))
     }
 }
+*/

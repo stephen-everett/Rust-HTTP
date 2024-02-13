@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
-use sqlx::{self, FromRow,};
+//use serde::{Deserialize, Serialize};
+//use sqlx::{self, FromRow,};
 
 
-
+/* 
 #[derive(Serialize,FromRow,Deserialize)]
 pub struct User{
     username: String,
@@ -14,16 +14,18 @@ pub struct User{
     password:String,
     
 }
+*/
 
-
-
+/* 
 #[derive(Serialize,Deserialize,FromRow)]
 struct BankInformation{
     bank_name: String,
     bank_routing: String,
     bank_account_number:String
 }
+*/
 
+/* 
 impl From<CreateUserBody> for User {
     fn from(user: CreateUserBody) -> Self {
         User{
@@ -37,7 +39,9 @@ impl From<CreateUserBody> for User {
         }
     }
 }
+*/
 
+/* 
 #[derive(Serialize,FromRow)]
 struct FriendList{
     friend_list: Vec<User>,
@@ -46,7 +50,9 @@ struct FriendList{
     decline_friend: bool,
 
 }
+*/
 
+/* 
 /// structure for request when creating user
 #[derive(Deserialize)]
 pub struct CreateUserBody {
@@ -59,7 +65,8 @@ pub struct CreateUserBody {
     pub password:String,
     pub pin:String
 }
-
+*/
+/* 
 /// structure to return to client without password
 #[derive(Serialize, FromRow)]
 pub struct UserNoPassword {
@@ -71,7 +78,8 @@ pub struct UserNoPassword {
     pub phone_number:String,
     pub birthdate:String
 }
-
+*/
+/* 
 // structure for SQL return for auth user
 #[derive(Serialize,FromRow)]
 pub struct AuthUser {
@@ -79,6 +87,7 @@ pub struct AuthUser {
     pub username:String,
     pub password: String,
 }
+*/
 
 
 // The users bank information is going to be in this format
