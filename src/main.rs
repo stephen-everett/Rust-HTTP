@@ -1,4 +1,4 @@
-// Third part Modules
+// Third party Modules
 use actix_web::{web, web::Data, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use dotenv::dotenv;
@@ -43,16 +43,12 @@ async fn main() -> std::io::Result<()> {
         let bearer_middleware = HttpAuthentication::bearer(validator);
         App::new()
             .app_data(Data::new(AppState { db: pool.clone() }))
-                .service(web::scope("/api")
-                    //.service(fetch_messages)
-                    //.service(post_message)
-                    //.service(test_connection)
-                    //.service(clear_messages)
-                    //.service(post_receipt)
-                    //.service(join_lobby)
+                .service(
+                    web::scope("/api")
                     .service(create_user)
                     .service(basic_auth)
-                        .service(web::scope("/debug")
+                    .service(
+                        web::scope("/debug")
                         .service(test_connection)
                         .service(get_all_users)
                         .service(
@@ -67,15 +63,7 @@ async fn main() -> std::io::Result<()> {
                         .service(search_user)
                         .service(delete_user)
                     )
-                    //.service(search_user)
-                    //.service(
-                        //web::scope("")
-                        //.wrap(bearer_middleware)
-                        //.service(test_auth)
-                        //.service(get_all_users)
-                        //.service(delete_user)
-                    //)
-                    )
+                )
     })
     .keep_alive(std::time::Duration::from_secs(75)) // timeout set because of errors from Nginx. 75 seconds might be long
     .bind(("0.0.0.0", 6000))?
