@@ -33,6 +33,7 @@ pub struct CreateUserBody {
     pub pin:String
 }
 
+/// User object but without password field. Used to 
 #[derive(Serialize, FromRow)]
 pub struct UserNoPassword {
     pub user_id:String,
@@ -63,7 +64,10 @@ pub struct UserSearch{
 }
 
 
-
+/// Constructor to create a CreateUserBody from a User
+/*
+    Author: Luis Baca
+ */
 impl From<CreateUserBody> for User {
     fn from(user: CreateUserBody) -> Self {
         User{

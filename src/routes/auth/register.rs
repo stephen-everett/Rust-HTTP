@@ -3,16 +3,22 @@ use sqlx::FromRow;
 use actix_web::{post, web::{Data, Json}, Responder, HttpResponse};
 use uuid::Uuid;
 use argonautica::Hasher;
-
-
 use crate::structs::{app_state::AppState, user::{CreateUserBody, UserNoPassword}};
 
-
+// Structure defined to use for counts for uniqueness constraints
 #[derive(FromRow, Serialize)]
 pub struct CountStruct {
     count:i64
 }
 
+
+/// Registers a new user to the system. Retrieves DB infor from AppState, and 
+/// A CreateUserBody JSON from front-end. Checks information to make sure that it does not violate 
+/// any of the uniqueness constraints, and then inserts data into User table and Profile table
+/*
+    Author: Stephen Everett
+    Contributors: Khirby Calma (Front-end), Alexander Loo (Front-end) 
+ */
 #[post("/register")]
 async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl Responder {
 
@@ -112,6 +118,12 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
     }
 }
 
+
+/// Returns true if the number of users in users table that contain given email address
+/// is 0
+/*
+    Author: Stephen Everett
+ */
 async fn unique_email(state: Data<AppState>, email:String) -> bool {
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM users WHERE LOWER(email_address) = $1"
@@ -132,6 +144,10 @@ async fn unique_email(state: Data<AppState>, email:String) -> bool {
     }
 }
 
+/// Returns true if the number of users with given phone number is 0
+/*
+    Stephen Everett
+ */
 async fn unique_phone(state: Data<AppState>, phone_number:String) -> bool {
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM users WHERE LOWER(phone_number) = $1"
@@ -152,6 +168,10 @@ async fn unique_phone(state: Data<AppState>, phone_number:String) -> bool {
     }
 }
 
+/// Returns true if the number of users with the given username is 0
+/*
+    Stephen Everett
+ */
 async fn unique_username(state: Data<AppState>, username:String) -> bool{
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM user_profiles WHERE LOWER(username) = $1"
