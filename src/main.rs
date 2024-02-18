@@ -22,9 +22,12 @@ mod experimental;
 use experimental::chat::start_connection::start_connection as start_connection_route;
 use experimental::chat::lobby::Lobby;
 
-
+// websockets
 use actix::Actor;
 
+
+// Main function to start the server and provide access to endpoints
+// Authors: Stephen Everett, Luis Baca
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     /*
@@ -42,11 +45,14 @@ async fn main() -> std::io::Result<()> {
 
 
     /*
-        Start the server and use defined endpoints. Endpoints are defined in services.rs
+        Start the server and use defined endpoints. Endpoints are defined in routes folder
         and imported at the top of this file
      */
     HttpServer::new(move || {
+        // bearer middleware used to verify JWT token on protected routes.
         let bearer_middleware = HttpAuthentication::bearer(validator);
+
+        // chat server used for websocket implementation. Work in progress
         let chat_server = Lobby::default().start();
         App::new()
             .app_data(Data::new(AppState { db: pool.clone() }))

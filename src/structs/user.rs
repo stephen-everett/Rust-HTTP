@@ -47,7 +47,9 @@ pub struct UserNoPassword {
 
 // Structure used to retrieve user login request from front-end,
 // and to retrieve data from DB
-// Author: Luis Baca
+/*
+    Author: Luis Baca
+*/
 #[derive(Serialize,FromRow)]
 pub struct AuthUser {
     pub user_id:String,
