@@ -18,6 +18,12 @@ use routes::{
 mod middleware;
 use middleware::validator::validator;
 
+mod experimental;
+use experimental::chat::start_connection::start_connection as start_connection_route;
+use experimental::chat::lobby::Lobby;
+
+
+use actix::Actor;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -41,8 +47,10 @@ async fn main() -> std::io::Result<()> {
      */
     HttpServer::new(move || {
         let bearer_middleware = HttpAuthentication::bearer(validator);
+        let chat_server = Lobby::default().start();
         App::new()
             .app_data(Data::new(AppState { db: pool.clone() }))
+            
                 .service(
                     web::scope("/api")
                     .service(create_user)
@@ -62,6 +70,12 @@ async fn main() -> std::io::Result<()> {
                         .wrap(bearer_middleware)
                         .service(search_user)
                         .service(delete_user)
+                    )
+                    .service(
+                        web::scope("/chat")
+                        .service(start_connection_route)
+                        .app_data(Data::new(chat_server.clone()))
+                        
                     )
                 )
     })

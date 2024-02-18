@@ -6,6 +6,15 @@ use sha2::Sha256;
 use jwt::SignWithKey;
 use crate::structs::{user::AuthUser, app_state::{AppState, TokenClaims}};
 
+
+/// Login endpoint. The front-end uses this endpoint to send data to the server. Implements a HTTP Responder.
+/// Takes data submitted in a actix_web::BasicAuth object. Hashes the password, compares the hash to the hash stored 
+/// in the database.
+/// Returns 200 Ok on success, or an HTTP Unauthorized.
+/*
+    Authors: Stephen Everett, Luis Baca
+    Contributors: Alexander Loo (Front-End) 
+ */
 #[get("/login")]
 async fn basic_auth(state:Data<AppState>, credentials:BasicAuth) -> impl Responder {
     let jwt_secret:Hmac<Sha256> = Hmac::new_from_slice(

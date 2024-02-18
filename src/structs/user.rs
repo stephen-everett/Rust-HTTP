@@ -1,3 +1,11 @@
+/*
+    Different user structures used throughout the program. When Serializing / Deserializing data
+    To send over HTTP, there needs to be a matching structure used / defined.
+
+    When receiving data from database, there needs to be a matching structure used/defined.
+ */
+
+
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -36,6 +44,9 @@ pub struct UserNoPassword {
     pub birthdate:String
 }
 
+// Structure used to retrieve user login request from front-end,
+// and to retrieve data from DB
+// Author: Luis Baca
 #[derive(Serialize,FromRow)]
 pub struct AuthUser {
     pub user_id:String,
