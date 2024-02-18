@@ -3,6 +3,8 @@ use sqlx::{self, FromRow,};
 
 
 
+/// Creates a User struct for user profile
+/// Author: Luis Baca
 #[derive(Serialize,FromRow,Deserialize)]
 pub struct User{
     username: String,
@@ -11,19 +13,11 @@ pub struct User{
     email_address:String,
     phone_number:String,
     birthdate:String,
-    password:String,
-    
+    password:String, 
 }
 
-
-
-#[derive(Serialize,Deserialize,FromRow)]
-struct BankInformation{
-    bank_name: String,
-    bank_routing: String,
-    bank_account_number:String
-}
-
+/// Converts a User struct to a CreateUserBody struct
+/// Author: Luis Baca
 impl From<CreateUserBody> for User {
     fn from(user: CreateUserBody) -> Self {
         User{
@@ -37,6 +31,18 @@ impl From<CreateUserBody> for User {
         }
     }
 }
+
+/// Struct to get the bank information for the user to send it to the server.
+/// userid is the primary key to find the the bank information on the user
+/// Author: Luis Baca
+#[derive(Serialize,Deserialize,FromRow)]
+struct BankInformation{
+    userid: String,
+    bank_name: String,
+    bank_routing: String,
+    bank_account_number:String
+}
+
 
 #[derive(Serialize,FromRow)]
 struct FriendList{
@@ -79,12 +85,3 @@ pub struct AuthUser {
     pub username:String,
     pub password: String,
 }
-
-
-// The users bank information is going to be in this format
-// #[derive(Serialize,Deserialize,FromRow)]
-// struct BankInformation{
-//     bank_name: String,
-//     bank_routing: String,
-//     bank_account_number:String
-// }
