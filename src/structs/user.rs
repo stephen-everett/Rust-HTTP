@@ -9,6 +9,10 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
+/// Creates a User struct for user profile
+/*
+    Author: Luis Baca
+*/
 #[derive(Serialize,FromRow,Deserialize)]
 pub struct User{
     username: String,
@@ -20,7 +24,7 @@ pub struct User{
     password:String,
     
 }
-
+/// structure for request when creating user
 #[derive(Deserialize)]
 pub struct CreateUserBody {
     pub username: String,
@@ -33,7 +37,7 @@ pub struct CreateUserBody {
     pub pin:String
 }
 
-/// User object but without password field. Used to 
+/// User object but without password field. Used to create the user 
 #[derive(Serialize, FromRow)]
 pub struct UserNoPassword {
     pub user_id:String,
@@ -55,6 +59,8 @@ pub struct AuthUser {
     pub password: String,
 }
 
+/// the output when the search is done. it is going to be in this format.
+/// Author: Luis Baca
 #[derive(Serialize,FromRow)]
 pub struct UserSearch{
     user_id: String,

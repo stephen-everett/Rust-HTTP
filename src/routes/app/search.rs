@@ -6,7 +6,10 @@ use crate::structs::{app_state::AppState, user::UserSearch};
 pub struct SearchParam{
     message:String
 }
-
+/// Basic search using the user's id. Responds 
+/*
+    Authors:  Luis Baca
+ */
 #[post("/search")]
 pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Responder {
     // get search parameter from body
