@@ -1,13 +1,27 @@
-// Third party Modules
-use actix_web::{web, web::Data, App, HttpServer};
+/*
+    Third Party Module
+ */
+// actix
+use actix_web::{web, web::Data, App, HttpServer, Error, HttpRequest, HttpResponse};
 use actix_web_httpauth::middleware::HttpAuthentication;
+
+// actix websockets
+use actix_web_actors::ws;
+use actix::{Actor, StreamHandler};
+use actix_web::get;
+
+// load environment variables and PgPool
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 
-// Our Modules
+/*
+    Our Modules
+ */
+// AppState to store state
 mod structs;
 use structs::app_state::AppState;
 
+// API Endpoints
 mod routes;
 use routes::{
     app::{search::search_user, delete_user::delete_user},
@@ -15,15 +29,24 @@ use routes::{
     debug::{get_all_users, test_connection, test_auth}
 };
 
+// Validate JWT (Authentication)
 mod middleware;
 use middleware::validator::validator;
 
 mod experimental;
-use experimental::chat::start_connection::start_connection as start_connection_route;
-use experimental::chat::lobby::Lobby;
+use experimental::chat::actors::connected_user::ConnectedUser;
 
-// websockets
-use actix::Actor;
+
+/*
+    Temport inline echo server
+ */
+
+#[get("echo")]
+async fn index(req:HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
+    let resp = ws::start(ConnectedUser {}, &req, stream);
+    println!("{:?}", resp);
+    resp
+}
 
 
 // Main function to start the server and provide access to endpoints
@@ -52,8 +75,6 @@ async fn main() -> std::io::Result<()> {
         // bearer middleware used to verify JWT token on protected routes.
         let bearer_middleware = HttpAuthentication::bearer(validator);
 
-        // chat server used for websocket implementation. Work in progress
-        let chat_server = Lobby::default().start();
         App::new()
             .app_data(Data::new(AppState { db: pool.clone() }))
             
@@ -78,10 +99,8 @@ async fn main() -> std::io::Result<()> {
                         .service(delete_user)
                     )
                     .service(
-                        web::scope("/chat")
-                        .service(start_connection_route)
-                        .app_data(Data::new(chat_server.clone()))
-                        
+                        web::scope("/ws")
+                        .service(index)
                     )
                 )
     })
