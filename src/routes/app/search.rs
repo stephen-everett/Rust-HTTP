@@ -32,8 +32,11 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
     }
 }
 
-#[post("/search_bank")]
-pub async fn find_user_bank(state:Data<AppState>,body:Json<UserBank>) -> impl Responder{
+// #[post("/search_bank")]
+// pub async fn find_user_bank(state:Data<AppState>,body:Json<UserBank>) -> impl Responder{
+//     let user_bank: UserBank = body.into_inner();
 
 
-}
+//     let searh_query = format!("SELECT info.user_id")
+
+// }

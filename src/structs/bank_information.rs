@@ -6,7 +6,7 @@ use sqlx::FromRow;
 /// userid is the primary key to find the the bank information on the user
 /// Author: Luis Baca
 #[derive(Serialize,Deserialize,FromRow)]
-struct BankInformation{
+pub struct BankInformation{
     user_id: String,
     bank_name: String,
     bank_routing: String,

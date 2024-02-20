@@ -12,6 +12,7 @@ use actix_web::get;
 
 // load environment variables and PgPool
 use dotenv::dotenv;
+use hello_rocket::routes::app::get_user_info::user_info;
 use sqlx::postgres::PgPoolOptions;
 
 /*
@@ -24,9 +25,9 @@ use structs::app_state::AppState;
 // API Endpoints
 mod routes;
 use routes::{
-    app::{search::search_user, delete_user::delete_user},
-    auth::{register::create_user, login::basic_auth},
-    debug::{get_all_users, test_connection, test_auth}
+    app::{delete_user::delete_user, get_user_info, search::search_user},
+    auth::{login::basic_auth, register::create_user},
+    debug::{get_all_users, test_auth, test_connection}
 };
 
 // Validate JWT (Authentication)
@@ -97,6 +98,7 @@ async fn main() -> std::io::Result<()> {
                         .wrap(bearer_middleware)
                         .service(search_user)
                         .service(delete_user)
+                        .service(user_info)
                     )
                     .service(
                         web::scope("/ws")
