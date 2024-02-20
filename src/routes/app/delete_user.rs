@@ -6,7 +6,7 @@ use crate::structs::app_state::{AppState, TokenClaims};
     Author: Stephen Everett
     Contributors: Khirby Calma(Front-end)
 */
-#[get("/api/delete_user")]
+#[get("/delete_user")]
 async fn delete_user(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) -> impl Responder {
     match claims {
         Some(claims) => {

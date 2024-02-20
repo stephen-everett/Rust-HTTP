@@ -1,12 +1,12 @@
-use actix_web::{post, web::{Data, Json}, Responder, HttpResponse};
+use actix_web::{body, post, web::{Data, Json}, HttpResponse, Responder};
 use serde::Deserialize;
-use crate::structs::{app_state::AppState, user::UserSearch};
+use crate::structs::{app_state::AppState, user::UserSearch,bank_information::UserBank};
 
 #[derive(Deserialize)]
 pub struct SearchParam{
     message:String
 }
-/// Basic search using the user's id. Responds 
+/// Basic search using the user's id. Responds with user information. 
 /*
     Authors:  Luis Baca
  */
@@ -31,3 +31,12 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
 
     }
 }
+
+// #[post("/search_bank")]
+// pub async fn find_user_bank(state:Data<AppState>,body:Json<UserBank>) -> impl Responder{
+//     let user_bank: UserBank = body.into_inner();
+
+
+//     let searh_query = format!("SELECT info.user_id")
+
+// }
