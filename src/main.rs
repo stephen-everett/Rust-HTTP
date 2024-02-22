@@ -7,7 +7,7 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 
 // actix websockets
 use actix_web_actors::ws;
-use actix::{Actor, StreamHandler};
+use actix::{Actor, StreamHandler, Addr};
 use actix_web::get;
 
 // load environment variables and PgPool
@@ -34,7 +34,7 @@ mod middleware;
 use middleware::validator::validator;
 
 mod experimental;
-use experimental::chat::actors::connected_user::ConnectedUser;
+use experimental::chat::actors::{connected_user::ConnectedUser, waiting_room::WaitingRoom};
 
 
 /*
@@ -42,8 +42,13 @@ use experimental::chat::actors::connected_user::ConnectedUser;
  */
 
 #[get("echo")]
-async fn index(req:HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
-    let resp = ws::start(ConnectedUser {}, &req, stream);
+async fn index(req:HttpRequest, stream: web::Payload, server: web::Data<Addr<WaitingRoom>>) -> Result<HttpResponse, Error> {
+    let resp = ws::start(ConnectedUser {
+        user_id: String::from(""),
+        username: String::from(""),
+        room: String::from("main"),
+        addr: server.get_ref().clone()
+    }, &req, stream);
     println!("{:?}", resp);
     resp
 }
@@ -75,8 +80,11 @@ async fn main() -> std::io::Result<()> {
         // bearer middleware used to verify JWT token on protected routes.
         let bearer_middleware = HttpAuthentication::bearer(validator);
 
+        let server = WaitingRoom::new().start();
+
         App::new()
             .app_data(Data::new(AppState { db: pool.clone() }))
+            .app_data(web::Data::new(server.clone()))
             
                 .service(
                     web::scope("/api")
