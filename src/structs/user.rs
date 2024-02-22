@@ -72,6 +72,30 @@ pub struct UserSearch{
 }
 
 
+#[derive(FromRow,Serialize)]
+pub struct FirstName{
+    name: String
+}
+
+#[derive(FromRow,Serialize)]
+pub struct LastName{
+    name: String
+}
+#[derive(FromRow,Serialize)]
+pub struct Email{
+    name: String
+}
+#[derive(FromRow,Serialize)]
+pub struct PhoneNumber{
+    number: String
+}
+
+#[derive(FromRow,Serialize)]
+pub struct Password{
+    pass: String
+}
+
+
 /// Constructor to create a CreateUserBody from a User
 /*
     Author: Luis Baca
