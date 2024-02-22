@@ -8,7 +8,6 @@ use crate::structs::app_state::{AppState, TokenClaims};
 */
 #[get("/delete_user")]
 async fn delete_user(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) -> impl Responder {
-    
     match claims {
         Some(claims) => {
             let query = "DELETE FROM users WHERE user_id = $1";
@@ -22,5 +21,4 @@ async fn delete_user(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
-
 }

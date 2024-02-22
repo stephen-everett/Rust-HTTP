@@ -5,6 +5,14 @@ use serde_json::{json, Value};
 use actix::Message as ActixMessage;
 
 
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
+use jwt::VerifyWithKey;
+
+use crate::structs::app_state::TokenClaims;
+
+
+
 #[derive(Serialize, Deserialize, ActixMessage)]
 #[rtype(result = "()")]
 pub struct UserMessage {
@@ -39,7 +47,8 @@ pub enum MessageType {
     Echo,
     Join,
     Err,
-    Info
+    Info,
+    Auth
 }
 
 pub struct ConnectedUser;
@@ -58,6 +67,30 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
                         MessageType::Echo => {
                             ctx.text(content.data.to_string())
                         },
+                        MessageType::Auth => {
+                            let jwt_secret: String = std::env::var("JWT_SECRET").expect("JWT SECRET must be set!");
+                            let key: Hmac<Sha256> = Hmac::new_from_slice(jwt_secret.as_bytes()).unwrap();
+
+                            match content.data.as_str() {
+                                Some(str) => {
+                                    // grab token from credentials passed from request
+                                    let token_string = str;
+
+                                    // check to see if token  is valid
+                                    let claims: Result<TokenClaims, &str> = token_string
+                                        .verify_with_key(&key)
+                                        .map_err(|_| "Invalid Token");
+
+                                    match claims {
+                                        Ok(value) => ctx.text("Successfully authenticated"),
+                                        Err(_) => ctx.text("Didn't authenticate")
+                                    }
+                                }    
+                                _ => ctx.text("👉👈 wrong data")
+                            }
+                            //let token_string: &str = content.data.as_str();
+
+                        }
                         _ => ctx.text("uwu can't use that yet 👉👈"),
                     }
                     Err(err) => ctx.text(format!("uwu👉👈 there was an error {:?}", err))
