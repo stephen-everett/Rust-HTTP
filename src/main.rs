@@ -24,9 +24,9 @@ use structs::app_state::AppState;
 // API Endpoints
 mod routes;
 use routes::{
-    app::{delete_user::delete_user, get_user_info::user_info, search::search_user},
+    app::{delete_user::delete_user, get_user_info::user_info, search::search_user,update_user::update_first_name},
     auth::{login::basic_auth, register::create_user},
-    debug::{get_all_users, test_auth, test_connection}
+    debug::{get_all_users, test_auth, test_connection},
 };
 
 // Validate JWT (Authentication)
@@ -98,6 +98,7 @@ async fn main() -> std::io::Result<()> {
                         .service(search_user)
                         .service(delete_user)
                         .service(user_info)
+                        .service(update_first_name)
                     )
                     .service(
                         web::scope("/ws")
