@@ -9,10 +9,10 @@ use crate::structs::user::{FirstName,LastName,Password,PhoneNumber,PIN};
 async fn update_first_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>, body:Json<FirstName>) -> impl Responder{
 match token {
     Some(token)=>{
-        let name: FirstName = body.into_inner();
+        //let name: FirstName = body.into_inner();
         let upQuery = "UPDATE users SET first_name = $1 WHERE user_id = $2";
         match sqlx::query(upQuery)
-        .bind(name.name)
+        .bind(body.name.clone())
         .bind(token.user_id.to_string())
         .execute(&state.db)
         .await{
@@ -24,6 +24,7 @@ match token {
     }
 }
 
+/* 
 #[post("/update_last_name")]
 async fn update_last_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>) -> impl Responder{
 
@@ -66,5 +67,6 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
     
 
 }
+*/
 
 
