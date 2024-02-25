@@ -18,30 +18,36 @@ use sqlx::postgres::PgPoolOptions;
     Our Modules
  */
 // AppState to store state
-mod structs;
-use structs::app_state::AppState;
+//mod structs;
+use hello_rocket::structs::app_state::AppState;
 
 // API Endpoints
-mod routes;
-use routes::{
+//mod routes;
+use hello_rocket::routes::{
     app::{delete_user::delete_user, get_user_info::user_info, search::search_user,
           update_user::{update_first_name,update_last_name,update_email,update_password,update_pin,update_username,update_phone_number}},
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
+    ws::ws::index
 };
 
-// Validate JWT (Authentication)
-mod middleware;
-use middleware::validator::validator;
 
-mod experimental;
-use experimental::chat::actors::{connected_user::{ConnectedUser, Server}, waiting_room::WaitingRoom};
+// Validate JWT (Authentication)
+//mod middleware;
+use hello_rocket::middleware::validator::validator;
+
+//mod experimental;
+//use experimental::chat::actors::{connected_user::{ConnectedUser, Server}, waiting_room::WaitingRoom};
+
+//mod websockets;
+use hello_rocket::websockets::actors::{connected_user::ConnectedUser, waiting_room::WaitingRoom};
+use hello_rocket::websockets::etc::connection_pool::Server;
 
 
 /*
     Temport inline echo server
  */
-
+/* 
 #[get("echo")]
 async fn index(req:HttpRequest, stream: web::Payload, server: Data<Addr<WaitingRoom>>) -> Result<HttpResponse, Error> {
     ws::start(ConnectedUser {
@@ -51,6 +57,8 @@ async fn index(req:HttpRequest, stream: web::Payload, server: Data<Addr<WaitingR
         addr: Server::WaitingRoom(server.get_ref().clone())
     }, &req, stream)
 }
+*/
+
 
 
 // Main function to start the server and provide access to endpoints
