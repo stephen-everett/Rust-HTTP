@@ -10,9 +10,19 @@ use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use jwt::VerifyWithKey;
 
-use crate::experimental::chat::actors::waiting_room::{WaitingRoom, Message};
+use crate::experimental::chat::actors::{
+    waiting_room::{WaitingRoom, Message, MessageFromServer, Authorized},
+    lobby::Lobby
+};
 use crate::structs::app_state::TokenClaims;
 
+#[derive(Message)]
+#[rtype(result = "()")]
+#[derive(Debug)]
+pub enum Server {
+    WaitingRoom(Addr<WaitingRoom>),
+    Lobby(Addr<Lobby>)
+}
 
 
 #[derive(Serialize, Deserialize, ActixMessage)]
@@ -23,7 +33,14 @@ pub struct UserMessage {
 }
 
 #[derive(Message)]
-#[rtype(result = "SocketMessage")]
+#[rtype(result = "()")]
+pub struct Connect {
+    pub addr: Addr<ConnectedUser>,
+}
+
+
+#[derive(Message)]
+#[rtype(result = "()")]
 pub struct SocketMessage {
     pub code: MessageType,
     pub data: Value,
@@ -63,27 +80,55 @@ pub enum MessageType {
 }
 
 #[derive(Debug)]
-pub struct ConnectedUser {
+pub struct ConnectedUser{
     pub user_id: String,
     pub username: String,
     pub room: String,
-    pub addr: Addr<WaitingRoom>,
+    pub addr: Server
 }
 impl ConnectedUser {}
 
 impl Actor for ConnectedUser {
     type Context = ws::WebsocketContext<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context){
+        match &self.addr {
+            Server::WaitingRoom(addr) => addr.do_send(Connect {
+                addr: ctx.address()
+            }),
+            _ => ()
+        }
+    }
 }
 
+impl Server {
+    fn do_send(&self, msg: SocketMessage) {
+        match self {
+            Server::WaitingRoom(addr) => addr.do_send(msg),
+            Server::Lobby(addr) => addr.do_send(msg)
+        }
+    }
+}
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
             Ok(ws::Message::Text(text)) => {
                 match serde_json::from_str::<UserMessage>(&text) {
-                    Ok(content) => match content.code {
+                    Ok(content) => self.addr.do_send(SocketMessage {
+                        code: content.code,
+                        data: content.data,
+                        addr: ctx.address()
+                    }),
+                    /*match content.code {
                         MessageType::Echo => {
-                            ctx.text(content.data.to_string())
+                            //ctx.text(content.data.to_string())
+                            let addr = ctx.address();
+                            self.addr.do_send( SocketMessage {
+                                code: content.code,
+                                data: content.data,
+                                addr: addr
+                            })
                         },
                         MessageType::Auth => {
                             let jwt_secret: String = std::env::var("JWT_SECRET").expect("JWT SECRET must be set!");
@@ -112,6 +157,23 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
                         MessageType::Join => {
                             let addr = ctx.address();
                             ctx.text("Hit the join area");
+                            self.addr.send(Connect {
+                                addr: ctx.address()
+                            })
+                            .into_actor(self)
+                            .then(|res, _, ctx| {
+                               match res {
+                                Ok(response) => ctx.text(""),
+                                _ => ctx.text("Something went wrong")
+                               }
+                               fut::ready(())
+                            })
+                            .wait(ctx)
+                               
+                        },
+                        MessageType::Info => {
+                            let addr = ctx.address();
+                            ctx.text("Hit the info area");
                             self.addr.send(SocketMessage {
                                 code: content.code,
                                 data: content.data,
@@ -120,16 +182,17 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
                             .into_actor(self)
                             .then(|res, _, ctx| {
                                match res {
-                                Ok(response) => ctx.text(response.data.to_string()),
+                                Ok(response) => ctx.text(""),
                                 _ => ctx.text("Something went wrong")
                                }
                                fut::ready(())
                             })
                             .wait(ctx)
-                               
+
                         }
                         _ => ctx.text("uwu can't use that yet 👉👈"),
-                    }
+                        */
+                    
                     Err(err) => ctx.text(format!("uwu👉👈 there was an error {:?}", err))
                 }
             },
@@ -158,5 +221,22 @@ impl Handler<Message> for ConnectedUser {
 
     fn handle(&mut self, msg: Message, ctx: &mut  ws::WebsocketContext<Self>) {
        ctx.text(msg.0);
+    }
+}
+
+impl Handler<MessageFromServer> for ConnectedUser {
+    type Result = ();
+
+    fn handle(&mut self, msg: MessageFromServer, ctx: &mut  ws::WebsocketContext<Self>) {
+        println!("Handling a MessageFromServer");
+        ctx.text(msg.data.to_string());
+     }
+}
+
+impl Handler<Authorized> for ConnectedUser {
+    type Result = ();
+
+    fn handle(&mut self, msg: Authorized, ctx: &mut  ws::WebsocketContext<Self>) {
+        self.addr = Server::Lobby(msg.addr);
     }
 }

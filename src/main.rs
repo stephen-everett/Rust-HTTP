@@ -34,7 +34,7 @@ mod middleware;
 use middleware::validator::validator;
 
 mod experimental;
-use experimental::chat::actors::{connected_user::ConnectedUser, waiting_room::WaitingRoom};
+use experimental::chat::actors::{connected_user::{ConnectedUser, Server}, waiting_room::WaitingRoom};
 
 
 /*
@@ -42,15 +42,13 @@ use experimental::chat::actors::{connected_user::ConnectedUser, waiting_room::Wa
  */
 
 #[get("echo")]
-async fn index(req:HttpRequest, stream: web::Payload, server: web::Data<Addr<WaitingRoom>>) -> Result<HttpResponse, Error> {
-    let resp = ws::start(ConnectedUser {
+async fn index(req:HttpRequest, stream: web::Payload, server: Data<Addr<WaitingRoom>>) -> Result<HttpResponse, Error> {
+    ws::start(ConnectedUser {
         user_id: String::from(""),
         username: String::from(""),
         room: String::from("main"),
-        addr: server.get_ref().clone()
-    }, &req, stream);
-    println!("{:?}", resp);
-    resp
+        addr: Server::WaitingRoom(server.get_ref().clone())
+    }, &req, stream)
 }
 
 
@@ -76,16 +74,15 @@ async fn main() -> std::io::Result<()> {
         Start the server and use defined endpoints. Endpoints are defined in routes folder
         and imported at the top of this file
      */
+    
+
+    let server = WaitingRoom::new().start();
     HttpServer::new(move || {
         // bearer middleware used to verify JWT token on protected routes.
         let bearer_middleware = HttpAuthentication::bearer(validator);
 
-        let server = WaitingRoom::new().start();
-
         App::new()
             .app_data(Data::new(AppState { db: pool.clone() }))
-            .app_data(web::Data::new(server.clone()))
-            
                 .service(
                     web::scope("/api")
                     .service(create_user)
@@ -109,7 +106,9 @@ async fn main() -> std::io::Result<()> {
                     )
                     .service(
                         web::scope("/ws")
+                        .app_data(Data::new(server.clone()))
                         .service(index)
+                        
                     )
                 )
     })
