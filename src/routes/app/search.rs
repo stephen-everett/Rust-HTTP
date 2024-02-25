@@ -1,6 +1,7 @@
-use actix_web::{body, post, web::{Data, Json}, HttpResponse, Responder};
+use actix_web::{body, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use rand::distributions::Standard;
 use serde::Deserialize;
-use crate::structs::{app_state::AppState, user::UserSearch,bank_information::UserBank};
+use crate::structs::{app_state::{AppState, TokenClaims}, user::UserSearch};
 
 #[derive(Deserialize)]
 pub struct SearchParam{
@@ -32,11 +33,12 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
     }
 }
 
-// #[post("/search_bank")]
-// pub async fn find_user_bank(state:Data<AppState>,body:Json<UserBank>) -> impl Responder{
-//     let user_bank: UserBank = body.into_inner();
-
-
-//     let searh_query = format!("SELECT info.user_id")
+// #[post("/QR_search")]
+// async fn qr_search(state:Data<AppState>,tokin:Option<ReqData<TokenClaims>>) -> impl Responder{
+//     match token{
+//         Some(claim) => {
+//             let qr_query = "SELECT username, first_name, last_name FROM user_porfiles"
+//         }
+//     }
 
 // }

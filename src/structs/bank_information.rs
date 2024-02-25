@@ -23,4 +23,3 @@ impl std::ops::Deref for UserBank{
         &self.info
     }
 }
-
