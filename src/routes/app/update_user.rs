@@ -14,7 +14,8 @@ async fn update_username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>
                 return  HttpResponse::Conflict().json("bad name");
             }
             else{
-                let up_query = "UPDATE users SET username = $1 WHERE user_id = $2";
+                let up_query = "UPDATE users_profiles SET username = $1                                     
+                                      WHERE user_id = $2";
                 match sqlx::query(up_query)
                     .bind(body.name.clone())
                     .bind(token.user_id.to_string())
@@ -41,7 +42,7 @@ async fn update_first_name(state:Data<AppState>,token: Option<ReqData<TokenClaim
             .bind(token.user_id.to_string())
             .execute(&state.db)
         .await{
-            Ok(name)=> HttpResponse::Ok().json("name has been changed"),
+            Ok(name)=> HttpResponse::Ok().json("First name has been changed"),
             Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
         }
          },
@@ -61,7 +62,7 @@ async fn update_last_name(state:Data<AppState>,token: Option<ReqData<TokenClaims
                 .bind(token.user_id.to_string())
                 .execute(&state.db)
             .await{
-                Ok(name)=> HttpResponse::Ok().json("name has been changed"),
+                Ok(name)=> HttpResponse::Ok().json("last name has been changed"),
                 Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },
@@ -84,7 +85,7 @@ async fn update_phone_number(state:Data<AppState>,token: Option<ReqData<TokenCla
                     .bind(token.user_id.to_string())
                     .execute(&state.db)
                 .await{
-                    Ok(name)=> HttpResponse::Ok().json("name has been changed"),
+                    Ok(name)=> HttpResponse::Ok().json("Phone number has been changed"),
                     Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
                 }
             }
@@ -103,13 +104,13 @@ async fn update_email(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,b
                 return HttpResponse::Conflict().json("not a vaild email");
             }
             else{
-                let up_query = "UPDATE users SET email = $1 WHERE user_id = $2";
+                let up_query = "UPDATE users SET email_address = $1 WHERE user_id = $2";
                 match sqlx::query(up_query)
                     .bind(body.name.clone())
                     .bind(token.user_id.to_string())
                     .execute(&state.db)
                 .await{
-                    Ok(name)=> HttpResponse::Ok().json("name has been changed"),
+                    Ok(name)=> HttpResponse::Ok().json("email has been changed"),
                     Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
                 }
             }
@@ -131,7 +132,7 @@ async fn update_pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
                 .bind(token.user_id.to_string())
                 .execute(&state.db)
             .await{
-                Ok(name)=> HttpResponse::Ok().json("name has been changed"),
+                Ok(name)=> HttpResponse::Ok().json("PIN has been changed"),
                 Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },
@@ -158,7 +159,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
                 .bind(token.user_id.to_string())
                 .execute(&state.db)
             .await{
-                Ok(name)=> HttpResponse::Ok().json("name has been changed"),
+                Ok(name)=> HttpResponse::Ok().json("Password has been changed"),
                 Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },
