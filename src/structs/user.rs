@@ -76,28 +76,29 @@ pub struct UserSearch{
 pub struct FirstName{
     pub name: String
 }
-
-#[derive(FromRow,Serialize)]
+#[derive(FromRow,Serialize,Deserialize)]
 pub struct LastName{
-    name: String
+   pub name: String
 }
-#[derive(FromRow,Serialize)]
-pub struct Email{
-    name: String
+#[derive(FromRow,Serialize,Deserialize)]
+pub struct Username{
+    pub name:String
 }
-#[derive(FromRow,Serialize)]
-pub struct PhoneNumber{
-    number: String
+#[derive(FromRow,Serialize,Deserialize)]
+pub struct UpdateEmail{
+    pub name: String
 }
-
-#[derive(FromRow,Serialize)]
-pub struct Password{
-    pass: String
+#[derive(FromRow,Serialize,Deserialize)]
+pub struct UpdatePhoneNumber{
+   pub number: String
 }
-
-#[derive(FromRow,Serialize)]
-pub struct PIN{
-    pin: String
+#[derive(FromRow,Serialize,Deserialize)]
+pub struct UpdatePassword{
+    pub pass: String
+}
+#[derive(FromRow,Serialize,Deserialize)]
+pub struct UpdatePIN{
+   pub pin: String
 }
 
 

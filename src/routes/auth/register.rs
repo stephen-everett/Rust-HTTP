@@ -124,7 +124,7 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
 /*
     Author: Stephen Everett
  */
-async fn unique_email(state: Data<AppState>, email:String) -> bool {
+pub async fn unique_email(state: Data<AppState>, email:String) -> bool {
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM users WHERE LOWER(email_address) = $1"
     )
@@ -148,7 +148,7 @@ async fn unique_email(state: Data<AppState>, email:String) -> bool {
 /*
     Stephen Everett
  */
-async fn unique_phone(state: Data<AppState>, phone_number:String) -> bool {
+pub async fn unique_phone(state: Data<AppState>, phone_number:String) -> bool {
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM users WHERE LOWER(phone_number) = $1"
     )
@@ -172,7 +172,7 @@ async fn unique_phone(state: Data<AppState>, phone_number:String) -> bool {
 /*
     Stephen Everett
  */
-async fn unique_username(state: Data<AppState>, username:String) -> bool{
+pub async fn unique_username(state: Data<AppState>, username:String) -> bool{
     match sqlx::query_as::<_,CountStruct>(
         "SELECT COUNT(*) FROM user_profiles WHERE LOWER(username) = $1"
     )

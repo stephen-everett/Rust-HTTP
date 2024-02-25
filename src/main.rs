@@ -24,7 +24,8 @@ use structs::app_state::AppState;
 // API Endpoints
 mod routes;
 use routes::{
-    app::{delete_user::delete_user, get_user_info::user_info, search::search_user,update_user::update_first_name},
+    app::{delete_user::delete_user, get_user_info::user_info, search::search_user,
+          update_user::{update_first_name,update_last_name,update_email,update_password,update_pin,update_username}},
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
 };
@@ -98,7 +99,15 @@ async fn main() -> std::io::Result<()> {
                         .service(search_user)
                         .service(delete_user)
                         .service(user_info)
-                        .service(update_first_name)
+                        .service(
+                            web::scope("/update")
+                            .service(update_first_name)
+                            .service(update_last_name)
+                            .service(update_email)
+                            .service(update_password)
+                            .service(update_username)
+                            .service(update_pin)
+                        )
                     )
                     .service(
                         web::scope("/ws")
