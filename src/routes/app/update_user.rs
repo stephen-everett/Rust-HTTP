@@ -14,7 +14,7 @@ async fn update_username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>
                 return  HttpResponse::Conflict().json("bad name");
             }
             else{
-                let up_query = "UPDATE users_profiles SET username = $1                                     
+                let up_query = "UPDATE user_profiles SET username = $1                                     
                                       WHERE user_id = $2";
                 match sqlx::query(up_query)
                     .bind(body.name.clone())
