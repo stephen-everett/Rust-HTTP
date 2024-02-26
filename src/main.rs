@@ -85,7 +85,7 @@ async fn main() -> std::io::Result<()> {
      */
     
 
-    let server = WaitingRoom::new().start();
+    let server = WaitingRoom::new(Data::new(AppState { db: pool.clone() })).start();
     HttpServer::new(move || {
         // bearer middleware used to verify JWT token on protected routes.
         let bearer_middleware = HttpAuthentication::bearer(validator);
