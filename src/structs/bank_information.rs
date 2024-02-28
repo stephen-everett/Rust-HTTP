@@ -7,12 +7,12 @@ use sqlx::FromRow;
 /// Author: Luis Baca
 #[derive(Serialize,Deserialize,FromRow)]
 pub struct BankInformation{
-    user_id: String,
-    bank_name: String,
-    bank_routing: String,
-    bank_account_number:String
+    pub user_id: String,
+    pub bank_name: String,
+    pub bank_routing: String,
+    pub bank_account_number:String
 }
-
+#[derive(Serialize,Deserialize,FromRow)]
 pub struct UserBank{
     pub info: BankInformation
 }
