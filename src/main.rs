@@ -27,7 +27,8 @@ use hello_rocket::structs::app_state::AppState;
 use hello_rocket::routes::{
     app::{delete_user::delete_user, get_user_info::user_info, search::search_user,
           update_user::{update_first_name,update_last_name,update_email,update_password,update_pin,update_username,update_phone_number},
-          friends::{send_friend_request, accept_friend_request, get_accepted_friends, get_outgoing_friends, get_incoming_friends, deny_friends_request}
+          friends::{send_friend_request, accept_friend_request, get_accepted_friends, get_outgoing_friends, get_incoming_friends, deny_friends_request},
+          post_receipt::{join_lobby,post_receipt}
         },
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
@@ -108,6 +109,11 @@ async fn main() -> std::io::Result<()> {
                             .wrap(bearer_middleware.clone())
                             .service(test_auth)
                         )
+                    )
+                    .service(
+                        web::scope("/pos")
+                        .service(post_receipt)
+                        .service(join_lobby)
                     )
                     .service(
                         web::scope("/app")
