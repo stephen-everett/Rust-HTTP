@@ -1,3 +1,4 @@
+use actix_web::web::get;
 /*
     Third Party Module
  */
@@ -25,7 +26,9 @@ use hello_rocket::structs::app_state::AppState;
 //mod routes;
 use hello_rocket::routes::{
     app::{delete_user::delete_user, get_user_info::user_info, search::search_user,
-          update_user::{update_first_name,update_last_name,update_email,update_password,update_pin,update_username,update_phone_number}},
+          update_user::{update_first_name,update_last_name,update_email,update_password,update_pin,update_username,update_phone_number},
+          friends::{send_friend_request, accept_friend_request, get_accepted_friends, get_outgoing_friends, get_incoming_friends, deny_friends_request}
+        },
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
     ws::ws::index
@@ -121,6 +124,15 @@ async fn main() -> std::io::Result<()> {
                             .service(update_username)
                             .service(update_pin)
                             .service(update_phone_number)
+                        )
+                        .service(
+                            web::scope("/friends")
+                            .service(send_friend_request)
+                            .service(accept_friend_request)
+                            .service(get_accepted_friends)
+                            .service(get_incoming_friends)
+                            .service(get_outgoing_friends)
+                            .service(deny_friends_request)
                         )
                     )
                     .service(
