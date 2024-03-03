@@ -1,4 +1,4 @@
-use actix_web::{get, web::{Data, ReqData}, Responder, HttpResponse};
+use actix_web::{get, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 
 /// Deletes user by extracting user_id from ReqData claims (JWT Token)
@@ -21,4 +21,11 @@ async fn delete_user(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
+}
+
+
+#[post("/delete_bank")]
+async fn delete_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<>) -> impl Responder{
+
+
 }
