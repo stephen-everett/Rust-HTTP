@@ -114,7 +114,6 @@ async fn update_email(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,b
                     Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
                 }
             }
-          
          },
          None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }

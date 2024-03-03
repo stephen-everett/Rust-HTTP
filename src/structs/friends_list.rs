@@ -6,7 +6,6 @@ use super::user::User;
 struct FriendList{
     friend_list: Vec<User>,
     pending_friend_request: Vec<User>,
-    accept_friend: bool,
-    decline_friend: bool,
+    status: String
 
 }
