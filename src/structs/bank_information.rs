@@ -9,17 +9,17 @@ use sqlx::FromRow;
 pub struct BankInformation{
     pub user_id: String,
     pub bank_name: String,
-    pub routing_number: String,
-    pub account_number:String
+    pub bank_routing: String,
+    pub bank_account_number:String
 }
-#[derive(Serialize,Deserialize,FromRow)]
-pub struct UserBank{
-    pub info: BankInformation
-}
+// #[derive(Serialize,Deserialize,FromRow)]
+// pub struct UserBank{
+//     pub info: BankInformation
+// }
 
-impl std::ops::Deref for UserBank{
-    type Target = BankInformation;
-    fn deref(&self) -> &Self::Target {
-        &self.info
-    }
-}
+// impl std::ops::Deref for UserBank{
+//     type Target = BankInformation;
+//     fn deref(&self) -> &Self::Target {
+//         &self.info
+//     }
+// }
