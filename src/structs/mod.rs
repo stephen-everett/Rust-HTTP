@@ -6,3 +6,4 @@ pub mod menu_item;
 pub mod receipt_item;
 pub mod app_state;
 pub mod new_struct;
+pub mod lobby;
