@@ -5,7 +5,7 @@ use argonautica::Hasher;
 use crate::routes::auth::register::{unique_phone,unique_email,unique_username};
 
 /// The user sends a new username to be updated on the database. The function is going to check if the username is already
-/// in the databasea. If it is not in the database, then the username would be changed in database if it is available.
+/// in the database. If it is not in the database, then the username would be changed in database if it is available.
 #[post("/username")]
 async fn update_username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<Username>)->impl Responder{
     match token{
@@ -44,7 +44,7 @@ async fn update_first_name(state:Data<AppState>,token: Option<ReqData<TokenClaim
         .await{
             Ok(name)=> HttpResponse::Ok().json("First name has been changed"),
             Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
-        }
+            }
          },
      None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
