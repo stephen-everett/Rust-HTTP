@@ -102,20 +102,20 @@ pub struct UpdatePIN{
 }
 
 
-/// Constructor to create a CreateUserBody from a User
+// Constructor to create a CreateUserBody from a User
 /*
     Author: Luis Baca
  */
-impl From<CreateUserBody> for User {
-    fn from(user: CreateUserBody) -> Self {
-        User{
-            username: user.username,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email_address:user.email_address,
-            phone_number: user.phone_number,
-            birthdate: user.birthdate,
-            password: user.password,
-        }
-    }
-}
+// impl From<CreateUserBody> for User {
+//     fn from(user: CreateUserBody) -> Self {
+//         User{
+//             username: user.username,
+//             first_name: user.first_name,
+//             last_name: user.last_name,
+//             email_address:user.email_address,
+//             phone_number: user.phone_number,
+//             birthdate: user.birthdate,
+//             password: user.password,
+//         }
+//     }
+// }

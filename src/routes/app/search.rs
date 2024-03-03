@@ -40,5 +40,4 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
 //             let qr_query = "SELECT username, first_name, last_name FROM user_porfiles"
 //         }
 //     }
-
 // }
