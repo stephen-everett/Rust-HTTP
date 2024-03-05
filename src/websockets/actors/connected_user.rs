@@ -8,11 +8,11 @@ use crate::websockets::{
     etc::connection_pool::Server,
     messages::{
         user_message::{UserMessage, SocketMessage, Connect, Disconnect},
-        server_message::{Message, Authorized, JoinedLobby, ServerMessage}
+        server_message::{Message, Authorized, JoinedLobby, ServerMessage, LobbyState}
     },
 };
 
-use crate::websockets::actors::lobby::LobbyState;
+//use crate::websockets::actors::lobby::LobbyState;
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 

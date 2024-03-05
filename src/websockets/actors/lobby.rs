@@ -7,7 +7,7 @@ use crate::websockets::{
     actors::connected_user::ConnectedUser,
     messages::{
         user_message::{SocketMessage, MessageType, Disconnect},
-        server_message::{AuthorizedUser, Message, JoinedLobby, ServerMessage}
+        server_message::{AuthorizedUser, Message, JoinedLobby, ServerMessage, LobbyState}
     },
 };
 
@@ -42,21 +42,6 @@ impl LobbyUser {
     }
 }
 
-#[derive(Debug, Message, Serialize)]
-#[rtype(result = "()")]
-pub struct LobbyState {
-    users: Vec<String>,
-    menu_items: Vec<ReceiptItem>
-}
-
-impl LobbyState {
-    pub fn new(users: Vec<String>, menu_items: Vec<ReceiptItem>) -> LobbyState {
-        LobbyState {
-            users:users,
-            menu_items:menu_items
-        }
-    }
-}
 
 impl Actor for Lobby {
     type Context = Context<Self>;
@@ -131,7 +116,7 @@ impl Handler<SocketMessage> for Lobby {
                                     let message = ServerMessage {
                                         context: String::from("lobby"),
                                         code: String::from("state"),
-                                        data: serde_json::to_string(&lobby_state).unwrap(),
+                                        data: lobby_state,
                                     };
                                     msg.addr.do_send(message);
                                 };
