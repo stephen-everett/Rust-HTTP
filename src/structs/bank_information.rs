@@ -12,6 +12,11 @@ pub struct BankInformation{
     pub bank_routing: String,
     pub bank_account_number:String
 }
+
+
+pub struct BankAccount{
+    pub bank_account: String
+}
 // #[derive(Serialize,Deserialize,FromRow)]
 // pub struct UserBank{
 //     pub info: BankInformation
