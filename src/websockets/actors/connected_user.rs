@@ -8,7 +8,7 @@ use crate::websockets::{
     etc::connection_pool::Server,
     messages::{
         user_message::{UserMessage, SocketMessage, Connect, Disconnect},
-        server_message::{Message, Authorized, JoinedLobby}
+        server_message::{Message, Authorized, JoinedLobby, ServerMessage}
     },
 };
 
@@ -136,6 +136,15 @@ impl Handler<LobbyState> for ConnectedUser {
     type Result = ();
     
     fn handle(&mut self, msg: LobbyState, ctx: &mut  ws::WebsocketContext<Self>) {
+        ctx.text(serde_json::to_string(&msg).unwrap());
+
+    }
+}
+
+impl Handler<ServerMessage> for ConnectedUser {
+    type Result = ();
+    
+    fn handle(&mut self, msg: ServerMessage, ctx: &mut  ws::WebsocketContext<Self>) {
         ctx.text(serde_json::to_string(&msg).unwrap());
 
     }

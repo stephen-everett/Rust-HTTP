@@ -1,6 +1,6 @@
 use actix::prelude::*;
-
-
+use serde::Serialize;
+use std::fmt;
 use crate::websockets::actors::{connected_user::ConnectedUser, lobby::Lobby};
 
 #[derive(Message)]
@@ -26,4 +26,12 @@ pub struct Message(pub String);
 #[rtype(result = "()")]
 pub struct JoinedLobby {
    pub lobby_id:String
+}
+
+#[derive(Message, Serialize)]
+#[rtype(result = "()")]
+pub struct ServerMessage {
+    pub context: String,
+    pub code: String,
+    pub data:String
 }

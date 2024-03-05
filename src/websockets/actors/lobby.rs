@@ -7,7 +7,7 @@ use crate::websockets::{
     actors::connected_user::ConnectedUser,
     messages::{
         user_message::{SocketMessage, MessageType, Disconnect},
-        server_message::{AuthorizedUser, Message, JoinedLobby}
+        server_message::{AuthorizedUser, Message, JoinedLobby, ServerMessage}
     },
 };
 
@@ -102,26 +102,38 @@ impl Handler<SocketMessage> for Lobby {
                     Value::String(lobby_id) => {
                         match self.rooms.get_mut(&lobby_id){
                             Some(lobby) => {
-                                let mut name: Vec<String> = Vec::new();
+                                let mut names: Vec<String> = Vec::new();
                                 for (_, user) in lobby.iter() {
-                                    user.addr.do_send(Message(format!("{:?} has joined lobby", msg.username)));
-                                    name.push(user.username.clone()); // collect names of everyone in room
+                                    //user.addr.do_send(Message(format!("{:?} has joined lobby", msg.username)));
+                                    user.addr.do_send(ServerMessage {
+                                        context: String::from("lobby"),
+                                        code: String::from("user_join"),
+                                        data: String::from(&msg.username)
+                                    });
+                                    names.push(user.username.clone()); // collect names of everyone in room
                                 }
-                                let new_user  = LobbyUser::new(msg.username, msg.user_id.clone(), msg.addr.clone());
+                                let new_user  = LobbyUser::new(msg.username.clone(), msg.user_id.clone(), msg.addr.clone());
                     
                                 lobby.insert(msg.user_id, new_user);
-                                msg.addr.do_send(Message(format!("Users in room: {:?}", name)));
+                                //msg.addr.do_send(Message(format!("Users in room: {:?}", name)));
                                 msg.addr.do_send(JoinedLobby {
                                     lobby_id:lobby_id.clone()
                                 });
 
+                                names.push(msg.username.clone());
+
                                 let somestate = self.state.clone();
-                                let users = name;
+                                let users = names;
                                 let lobby_id_moved = lobby_id.clone();
                                 let future = async move {
                                     let receipt = get_receipt(somestate, lobby_id_moved).await;
                                     let lobby_state = LobbyState::new(users, receipt);
-                                    msg.addr.do_send(lobby_state);
+                                    let message = ServerMessage {
+                                        context: String::from("lobby"),
+                                        code: String::from("state"),
+                                        data: serde_json::to_string(&lobby_state).unwrap(),
+                                    };
+                                    msg.addr.do_send(message);
                                 };
                                 future.into_actor(self).spawn(ctx);
 
