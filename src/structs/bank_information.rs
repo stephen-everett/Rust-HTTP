@@ -13,7 +13,7 @@ pub struct BankInformation{
     pub bank_account_number:String
 }
 
-
+#[derive(Deserialize)]
 pub struct BankAccount{
     pub bank_account: String
 }
