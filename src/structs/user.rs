@@ -6,6 +6,8 @@
  */
 
 
+use std::string;
+
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -101,6 +103,11 @@ pub struct UpdatePIN{
    pub pin: String
 }
 
+#[derive(FromRow,Serialize,Deserialize)]
+pub struct Picture{
+    // pub user_id: string,
+    pub picture: String
+}
 
 // Constructor to create a CreateUserBody from a User
 /*

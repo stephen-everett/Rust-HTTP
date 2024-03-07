@@ -58,7 +58,7 @@ pub async fn search_user_fname(state:Data<AppState>,body:Json<SearchParam>) -> i
 async fn search_user_bank(state:Data<AppState>, token:Option<ReqData<TokenClaims>>)->impl Responder{
     match token{
         Some(token) =>{
-            let search_bank = "SELECT * from banks where user_id = $1";
+            let search_bank = "SELECT * FROM banks WHERE user_id = $1";
             match sqlx::query_as::<_,BankInformation>(search_bank)
                 .bind(token.user_id.to_string())
                 .fetch_all(&state.db)

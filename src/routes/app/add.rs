@@ -1,9 +1,10 @@
-use actix_web::{post, web::{Data, ReqData,Json}, Responder, HttpResponse};
+use actix_web::{body, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::{app_state::{AppState, TokenClaims}};
 use crate::structs::bank_information::BankInformation;
+use crate::structs::user::Picture;
 
 
-#[post("/add_bank")]
+#[post("/bank")]
 async fn add_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<BankInformation>)-> impl Responder{
     match token{
         Some(token) =>{
@@ -22,6 +23,25 @@ async fn add_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:J
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }  
+}
+
+
+#[post("/picture")]
+async fn add_picture(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Picture>)-> impl Responder{
+    match token {
+        Some(token) => {
+            let add_pic = "INSERT INTO profile_pictures(user_id, picture) VALUES($1,$2)";
+            match sqlx::query(add_pic)
+                .bind(token.user_id.to_string())
+                .bind(body.picture.clone())
+                .execute(&state.db)
+                .await{
+                    Ok(_) => HttpResponse::Ok().json("picture added"),
+                    Err(e)=>HttpResponse::InternalServerError().json(format!("{:?}",e))
+                }
+        },
+        None => HttpResponse::InternalServerError().json("Something was wrong with token") 
+    }
 }
 
 // #[post("/add_bank")]

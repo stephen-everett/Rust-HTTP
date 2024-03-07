@@ -22,6 +22,4 @@ async fn user_info(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) 
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
-
-
 }

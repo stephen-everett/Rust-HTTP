@@ -9,8 +9,8 @@ use sqlx::FromRow;
 pub struct BankInformation{
     pub user_id: String,
     pub bank_name: String,
-    pub bank_routing: String,
-    pub bank_account_number:String
+    pub routing_number: String,
+    pub account_number:String
 }
 
 #[derive(Deserialize)]

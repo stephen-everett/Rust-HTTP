@@ -1,6 +1,8 @@
-use actix_web::{body, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use actix_web::{body, post, web::{Data, Json, ReqData}, HttpResponse, HttpResponseBuilder, Responder};
 use crate::structs::{app_state::{AppState, TokenClaims},
-                     user::{UpdatePIN,FirstName,LastName,UpdatePhoneNumber,UpdateEmail,UpdatePassword,Username}};
+                     user::{UpdatePIN,FirstName,LastName,UpdatePhoneNumber,
+                            UpdateEmail,UpdatePassword,Username,
+                            Picture}};
 use argonautica::Hasher;
 use crate::routes::auth::register::{unique_phone,unique_email,unique_username};
 
@@ -162,6 +164,26 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
                 Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },
+        None => HttpResponse::InternalServerError().json("Something was wrong with token")
+    }
+}
+
+
+
+#[post("/picture")]
+async fn update_picture(state: Data<AppState>, token: Option<ReqData<TokenClaims>>, body:Json<Picture>)-> impl Responder{
+    match token{
+        Some(token) => {
+           let pic_q = "UPDATE FROM profile_pictures SET picture = $1 WHERE user_id = $2";
+           match sqlx::query(pic_q) 
+               .bind(body.picture.clone())
+               .bind(token.user_id.to_string())
+               .execute(&state.db)
+               .await{
+                Ok(_) => HttpResponse::Ok().json("picture changed"),
+                Err(e)=> HttpResponse::InternalServerError().json(format!("{:?}",e))
+               }
+        },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
 }
