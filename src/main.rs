@@ -13,6 +13,7 @@ use actix_web::get;
 
 // load environment variables and PgPool
 use dotenv::dotenv;
+use hello_rocket::routes::app::add::{add_bank, add_picture};
 use hello_rocket::routes::app::update_user::update_picture;
 use sqlx::postgres::PgPoolOptions;
 
@@ -31,7 +32,8 @@ use hello_rocket::routes::{
                         update_pin,update_username,update_phone_number, update_picture},
           friends::{send_friend_request, accept_friend_request, get_accepted_friends, 
                     get_outgoing_friends, get_incoming_friends, deny_friends_request},
-          post_receipt::{join_lobby,post_receipt}
+          post_receipt::{join_lobby,post_receipt},
+          add::{add_bank,add_picture},
         },
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
@@ -124,6 +126,11 @@ async fn main() -> std::io::Result<()> {
                         .service(search_user)
                         .service(delete_user)
                         .service(user_info)
+                        .service(
+                            web::scope("/add")
+                            .service(add_picture)
+                            .service(add_bank)
+                        )
                         .service(
                             web::scope("/update")
                             .service(update_first_name)
