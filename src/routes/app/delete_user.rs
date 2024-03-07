@@ -35,11 +35,10 @@ async fn delete_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,bod
                 .bind(body.bank_account.clone())
                 .execute(&state.db)
                 .await{
-                   Ok(k)=> HttpResponse::Ok().json("bank removed"),
+                   Ok(_)=> HttpResponse::Ok().json("bank removed"),
                    Err(err)=> HttpResponse::InternalServerError().json("bank not found")
                 }
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
-
 }
