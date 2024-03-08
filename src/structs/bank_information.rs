@@ -7,19 +7,24 @@ use sqlx::FromRow;
 /// Author: Luis Baca
 #[derive(Serialize,Deserialize,FromRow)]
 pub struct BankInformation{
-    user_id: String,
-    bank_name: String,
-    bank_routing: String,
-    bank_account_number:String
+    pub user_id: String,
+    pub bank_name: String,
+    pub routing_number: String,
+    pub account_number:String
 }
 
-pub struct UserBank{
-    pub info: BankInformation
+#[derive(Deserialize)]
+pub struct BankAccount{
+    pub bank_account: String
 }
+// #[derive(Serialize,Deserialize,FromRow)]
+// pub struct UserBank{
+//     pub info: BankInformation
+// }
 
-impl std::ops::Deref for UserBank{
-    type Target = BankInformation;
-    fn deref(&self) -> &Self::Target {
-        &self.info
-    }
-}
+// impl std::ops::Deref for UserBank{
+//     type Target = BankInformation;
+//     fn deref(&self) -> &Self::Target {
+//         &self.info
+//     }
+// }

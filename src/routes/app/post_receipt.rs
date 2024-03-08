@@ -53,8 +53,7 @@ pub async fn join_lobby(state: Data<AppState>, body: Json<Lobby>) -> impl Respon
     {
         Ok(data) => HttpResponse::Ok().json(data),
         Err(_) => HttpResponse::NotFound().json( query_string),
-    }
-    
+    }  
 }
 
 // create a new lobby and return lobby number

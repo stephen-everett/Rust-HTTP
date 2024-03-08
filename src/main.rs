@@ -13,6 +13,8 @@ use actix_web::get;
 
 // load environment variables and PgPool
 use dotenv::dotenv;
+use hello_rocket::routes::app::add::{add_bank, add_picture};
+use hello_rocket::routes::app::update_user::update_picture;
 use sqlx::postgres::PgPoolOptions;
 
 /*
@@ -26,9 +28,12 @@ use hello_rocket::structs::app_state::AppState;
 //mod routes;
 use hello_rocket::routes::{
     app::{delete_user::delete_user, get_user_info::user_info, search::search_user,
-          update_user::{update_first_name,update_last_name,update_email,update_password,update_pin,update_username,update_phone_number},
-          friends::{send_friend_request, accept_friend_request, get_accepted_friends, get_outgoing_friends, get_incoming_friends, deny_friends_request},
-          post_receipt::{join_lobby,post_receipt}
+          update_user::{update_first_name,update_last_name,update_email,update_password,
+                        update_pin,update_username,update_phone_number, update_picture},
+          friends::{send_friend_request, accept_friend_request, get_accepted_friends, 
+                    get_outgoing_friends, get_incoming_friends, deny_friends_request},
+          post_receipt::{join_lobby,post_receipt},
+          add::{add_bank,add_picture},
         },
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
@@ -122,6 +127,11 @@ async fn main() -> std::io::Result<()> {
                         .service(delete_user)
                         .service(user_info)
                         .service(
+                            web::scope("/add")
+                            .service(add_picture)
+                            .service(add_bank)
+                        )
+                        .service(
                             web::scope("/update")
                             .service(update_first_name)
                             .service(update_last_name)
@@ -130,6 +140,7 @@ async fn main() -> std::io::Result<()> {
                             .service(update_username)
                             .service(update_pin)
                             .service(update_phone_number)
+                            .service(update_picture)
                         )
                         .service(
                             web::scope("/friends")
