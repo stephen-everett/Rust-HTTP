@@ -13,8 +13,6 @@ use actix_web::get;
 
 // load environment variables and PgPool
 use dotenv::dotenv;
-use hello_rocket::routes::app::add::{add_bank, add_picture};
-use hello_rocket::routes::app::update_user::update_picture;
 use sqlx::postgres::PgPoolOptions;
 
 /*
