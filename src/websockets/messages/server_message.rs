@@ -53,7 +53,8 @@ impl LobbyState {
     }
 }
 
-
+#[derive(Serialize)]
 pub enum MessageData {
-    ServerState(LobbyState)
+    ServerState(LobbyState),
+    UserName(String)
 }

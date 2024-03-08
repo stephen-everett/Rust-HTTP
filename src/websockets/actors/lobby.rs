@@ -7,7 +7,7 @@ use crate::websockets::{
     actors::connected_user::ConnectedUser,
     messages::{
         user_message::{SocketMessage, MessageType, Disconnect},
-        server_message::{AuthorizedUser, Message, JoinedLobby, ServerMessage, LobbyState}
+        server_message::{AuthorizedUser, Message, JoinedLobby, ServerMessage, LobbyState, MessageData}
     },
 };
 
@@ -93,7 +93,7 @@ impl Handler<SocketMessage> for Lobby {
                                     user.addr.do_send(ServerMessage {
                                         context: String::from("lobby"),
                                         code: String::from("user_join"),
-                                        data: String::from(&msg.username)
+                                        data: MessageData::UserName(String::from(&msg.username))
                                     });
                                     names.push(user.username.clone()); // collect names of everyone in room
                                 }
@@ -116,7 +116,7 @@ impl Handler<SocketMessage> for Lobby {
                                     let message = ServerMessage {
                                         context: String::from("lobby"),
                                         code: String::from("state"),
-                                        data: lobby_state,
+                                        data: MessageData::ServerState(lobby_state),
                                     };
                                     msg.addr.do_send(message);
                                 };
@@ -137,7 +137,12 @@ impl Handler<SocketMessage> for Lobby {
                                 let future = async move {
                                     let receipt = get_receipt(somestate, lobby_id_moved).await;
                                     let lobby_state = LobbyState::new(users, receipt);
-                                    msg.addr.do_send(lobby_state);
+                                    let message = ServerMessage {
+                                        context: String::from("lobby"),
+                                        code: String::from("state"),
+                                        data: MessageData::ServerState(lobby_state),
+                                    };
+                                    msg.addr.do_send(message);
                                 };
                                 future.into_actor(self).spawn(ctx);
 
