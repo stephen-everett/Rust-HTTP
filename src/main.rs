@@ -25,7 +25,9 @@ use hello_rocket::structs::app_state::AppState;
 // API Endpoints
 //mod routes;
 use hello_rocket::routes::{
-    app::{delete_user::delete_user, get_user_info::user_info, search::search_user,
+    app::{delete_user::{delete_user,delete_bank},
+          get_user_info::user_info, 
+          search::{search_user, search_user_bank,search_user_fname,search_user_lname},
           update_user::{update_first_name,update_last_name,update_email,update_password,
                         update_pin,update_username,update_phone_number, update_picture},
           friends::{send_friend_request, accept_friend_request, get_accepted_friends, 
@@ -121,9 +123,16 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("/app")
                         .wrap(bearer_middleware)
-                        .service(search_user)
                         .service(delete_user)
                         .service(user_info)
+                        .service(delete_bank)
+                        .service(
+                            web::scope("/search")
+                            .service(search_user)
+                            .service(search_user_bank)
+                            .service(search_user_fname)
+                            .service(search_user_lname)
+                        )
                         .service(
                             web::scope("/add")
                             .service(add_picture)
