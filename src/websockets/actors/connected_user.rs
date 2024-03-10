@@ -1,3 +1,15 @@
+/*
+    Author: Stephen Everett
+
+    This is the primary websocket actor for a connected user. A connected user maintains a connection
+    to the client by sending a heartbeat every 5 seconds to keep the connection alive. 
+
+    The conencted user also maintains the address to a particular 'server', either 'waiting_room' or
+    'lobby'. The connect user forwards all messages to the particular server, depending on if they've 
+    been authenticated on the websocket connection. The server will then process the message and send 
+    back a response, which is handled here.
+ */
+
 use actix::{Actor, StreamHandler, AsyncContext};
 use actix_web_actors::ws;
 use actix::prelude::*;

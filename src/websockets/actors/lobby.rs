@@ -1,3 +1,14 @@
+/*
+    Author: Stephen Everett
+
+    This is the main room that handles most of the connected_user messages.
+    This is where all current connections are managed, as well as a collection of all
+    lobbies that users can connect to.
+
+    Handles messages and then updates the users as necessary
+ */
+
+ // imports
 use std::collections::{HashMap, HashSet};
 use actix::prelude::*;
 use futures::future::Join;
@@ -18,6 +29,7 @@ use crate::structs::{
 
 use crate::websockets::queries::get_receipt;
 
+// definitions
 pub struct Lobby {
     //sessions: HashMap<String, Recipient<Message>>,
     sessions: HashMap<String, actix::Addr<ConnectedUser>>,
@@ -32,6 +44,7 @@ pub struct LobbyUser {
     addr: actix::Addr<ConnectedUser>
 }
 
+// constructor
 impl LobbyUser {
     pub fn new(username: String, user_id:String, addr:actix::Addr<ConnectedUser>) -> LobbyUser {
         LobbyUser {
@@ -59,6 +72,7 @@ impl Lobby {
     }
 }
 
+// receive an authorized user and add them to collection
 impl Handler<AuthorizedUser> for Lobby {
     type Result = ();
 
@@ -72,6 +86,7 @@ impl Handler<AuthorizedUser> for Lobby {
 
 }
 
+// handle messages from connected_user
 impl Handler<SocketMessage> for Lobby {
     type Result = ();
     
@@ -82,6 +97,8 @@ impl Handler<SocketMessage> for Lobby {
                     address.do_send(Message(msg.data.to_string()))
                 }
             }
+            // Join a lobby given a lobby ID. If there is no lobby created, create one first. Reply back
+            // to everyone in the lobby that someone has joined
             MessageType::Join => {
                 match msg.data{
                     Value::String(lobby_id) => {
@@ -158,6 +175,7 @@ impl Handler<SocketMessage> for Lobby {
     }
 }
 
+// send disconnect update to users when someone disconnects
 impl Handler<Disconnect> for Lobby {
     type Result = ();
 

@@ -1,3 +1,9 @@
+/*
+    Author: Stephen Everett
+
+    Endpoint used to establish a websocket connection
+ */
+
 use actix_web::{web, web::{Data,Payload}, Error,HttpResponse, HttpRequest, get};
 use actix::Addr;
 use actix_web_actors::ws;
