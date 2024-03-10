@@ -17,7 +17,7 @@ async fn delete_user(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>
                 .execute(&state.db)
                 .await {
                     Ok(rows) => HttpResponse::Ok().json(format!("User has been deleted: {:?}", rows.rows_affected())),
-                    Err(_err) => HttpResponse::InternalServerError().json(format!("Something went wrong: {:?}", err))
+                    Err(_err) => HttpResponse::InternalServerError().json(format!("Something went wrong: {:?}", _err))
                 }
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
