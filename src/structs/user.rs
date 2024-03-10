@@ -5,9 +5,6 @@
     When receiving data from database, there needs to be a matching structure used/defined.
  */
 
-
-use std::string;
-
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -108,6 +105,7 @@ pub struct Picture{
     // pub user_id: string,
     pub picture: String
 }
+
 
 // Constructor to create a CreateUserBody from a User
 /*

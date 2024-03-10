@@ -1,4 +1,4 @@
-use actix_web::{body, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 
 use serde::Deserialize;
 use crate::structs::{app_state::{AppState, TokenClaims}, bank_information::BankInformation, user::UserSearch};

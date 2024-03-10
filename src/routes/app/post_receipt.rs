@@ -1,3 +1,10 @@
+/*
+    Author: Stephen Everett
+    Endpoints used for plugin to send over a receipt. It then creates a lobby, and enters the data
+    into the database. Returns the Lobby ID to be used to join the lobby. Has a join_lobby endpoint for 
+    testing purposes, but actual joining is handled with the websockets
+ */
+
 use actix_web::{
     post,
     web::{Data, Json},

@@ -1,6 +1,5 @@
 use actix::prelude::*;
 use serde::Serialize;
-use std::fmt;
 use crate::websockets::actors::{connected_user::ConnectedUser, lobby::Lobby};
 use crate::structs::receipt_item::ReceiptItem;
 
@@ -40,12 +39,12 @@ pub struct ServerMessage {
 #[derive(Debug, Message, Serialize)]
 #[rtype(result = "()")]
 pub struct LobbyState {
-    pub users: Vec<String>,
+    pub users: Vec<User>,
     pub menu_items: Vec<ReceiptItem>
 }
 
 impl LobbyState {
-    pub fn new(users: Vec<String>, menu_items: Vec<ReceiptItem>) -> LobbyState {
+    pub fn new(users: Vec<User>, menu_items: Vec<ReceiptItem>) -> LobbyState {
         LobbyState {
             users:users,
             menu_items:menu_items
@@ -53,8 +52,21 @@ impl LobbyState {
     }
 }
 
+#[derive(Serialize, Debug)]
+pub struct User {
+    pub user_id:String,
+    pub username: String,
+}
+#[derive(Serialize, Debug)]
+pub struct DUser {
+    pub user_id:String,
+}
+
+
 #[derive(Serialize)]
 pub enum MessageData {
     ServerState(LobbyState),
-    UserName(String)
+    UserData(User),
+    DisconnectedUser(DUser),
+    Message(String)
 }
