@@ -23,7 +23,7 @@ use hello_rocket::structs::app_state::AppState;
 //mod routes;
 use hello_rocket::routes::{
     app::{delete_user::{delete_user,delete_bank},
-          get_user_info::user_info, 
+          get_user_info::{user_info, other_user}, 
           search::{search_user, search_user_bank,search_user_fname,search_user_lname},
           update_user::{update_first_name,update_last_name,update_email,update_password,
                         update_pin,update_username,update_phone_number, update_picture},
