@@ -52,7 +52,7 @@ pub async fn search_user_fname(state:Data<AppState>,body:Json<SearchParam>) -> i
         Err(_) => HttpResponse::InternalServerError().json("User not found") 
     }
 }
-
+/// searchs the database with the likely hood of having the same last name and grabs all like users
 #[post("/search_lname")]
 pub async fn search_user_lname(state:Data<AppState>,body:Json<SearchParam>) -> impl Responder {
     // get search parameter from body
@@ -90,5 +90,3 @@ async fn search_user_bank(state:Data<AppState>, token:Option<ReqData<TokenClaims
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
     }
 }
-
-

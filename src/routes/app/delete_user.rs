@@ -17,7 +17,7 @@ async fn delete_user(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>
                 .execute(&state.db)
                 .await {
                     Ok(rows) => HttpResponse::Ok().json(format!("User has been deleted: {:?}", rows.rows_affected())),
-                    Err(err) => HttpResponse::InternalServerError().json(format!("Something went wrong: {:?}", err))
+                    Err(_err) => HttpResponse::InternalServerError().json(format!("Something went wrong: {:?}", err))
                 }
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
@@ -36,7 +36,7 @@ async fn delete_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,bod
                 .execute(&state.db)
                 .await{
                    Ok(_)=> HttpResponse::Ok().json("bank removed"),
-                   Err(err)=> HttpResponse::InternalServerError().json("bank not found")
+                   Err(_err)=> HttpResponse::InternalServerError().json("bank not found")
                 }
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")
