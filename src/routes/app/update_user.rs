@@ -169,7 +169,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
 }
 
 
-
+/// changes the current picture to a new one
 #[post("/picture")]
 async fn update_picture(state: Data<AppState>, token: Option<ReqData<TokenClaims>>, body:Json<Picture>)-> impl Responder{
     match token{

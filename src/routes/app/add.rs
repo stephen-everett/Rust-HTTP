@@ -3,7 +3,7 @@ use crate::structs::{app_state::{AppState, TokenClaims}};
 use crate::structs::bank_information::BankInformation;
 use crate::structs::user::Picture;
 
-
+/// adds a new bank to the user profile
 #[post("/bank")]
 async fn add_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<BankInformation>)-> impl Responder{
     match token{
@@ -25,7 +25,7 @@ async fn add_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:J
     }  
 }
 
-
+/// stores a picture in a HEX format to save on space
 #[post("/picture")]
 async fn add_picture(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Picture>)-> impl Responder{
     match token {

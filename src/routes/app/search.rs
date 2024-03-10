@@ -31,7 +31,7 @@ pub async fn search_user(state:Data<AppState>,body:Json<SearchParam>) -> impl Re
         Err(_) => HttpResponse::InternalServerError().json("User not found") 
     }
 }
-
+/// searches the database with the likely hood of having the same first name and grabs all like users
 #[post("/search_fname")]
 pub async fn search_user_fname(state:Data<AppState>,body:Json<SearchParam>) -> impl Responder {
     // get search parameter from body
@@ -52,7 +52,7 @@ pub async fn search_user_fname(state:Data<AppState>,body:Json<SearchParam>) -> i
         Err(_) => HttpResponse::InternalServerError().json("User not found") 
     }
 }
-/// searchs the database with the likely hood of having the same last name and grabs all like users
+/// searches the database with the likely hood of having the same last name and grabs all like users
 #[post("/search_lname")]
 pub async fn search_user_lname(state:Data<AppState>,body:Json<SearchParam>) -> impl Responder {
     // get search parameter from body
@@ -73,7 +73,7 @@ pub async fn search_user_lname(state:Data<AppState>,body:Json<SearchParam>) -> i
         Err(_) => HttpResponse::InternalServerError().json("User not found") 
     }
 }
-
+/// searches all the users banks and returns them in a vector of all possible matches
 #[post("/search_user_banks")]
 async fn search_user_bank(state:Data<AppState>, token:Option<ReqData<TokenClaims>>)->impl Responder{
     match token{

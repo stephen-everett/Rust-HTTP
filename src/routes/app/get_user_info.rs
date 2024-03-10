@@ -3,7 +3,7 @@ use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::UserNoPassword;
 
 
-
+/// gets all the user information except pin and password
 #[get("/get_info")]
 async fn user_info(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) -> impl Responder{
 

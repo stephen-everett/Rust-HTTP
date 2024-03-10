@@ -24,7 +24,7 @@ async fn delete_user(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>
     }
 }
 
-
+/// removes the user's specified bank
 #[post("/delete_bank")]
 async fn delete_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<BankAccount>) -> impl Responder{
     match token {
