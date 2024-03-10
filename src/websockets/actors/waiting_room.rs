@@ -1,10 +1,18 @@
+/*
+    Author: Stephen Everett
 
-use std::collections::{HashMap, HashSet};
+    This is the first server that the user connects to. The only message that it will handle is an Auth message.
+    Any other messages are denied. Once Auth goes through correctly, it will send a message to the connected user
+    actor with the address for the lobby. Inside lobby the user can then join rooms, or send information normally.
+ */
+
+
+// imports
+use std::collections::HashMap;
 use actix::prelude::*;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use jwt::VerifyWithKey;
-use sqlx::prelude::FromRow;
 
 
 use crate::{
@@ -12,23 +20,20 @@ use crate::{
         actors::{connected_user::ConnectedUser, lobby::Lobby},
         messages::{
             user_message::{SocketMessage, MessageType, Connect, Disconnect},
-            server_message::{Authorized, AuthorizedUser, Message}
+            server_message::{Authorized, AuthorizedUser, ServerMessage, MessageData}
         },
         queries::get_username,
     },
     structs::app_state::{TokenClaims, AppState}
 };
 
-#[derive(FromRow)]
-pub struct UserName {
-    username: String
-}
+/*
+    Definitions
+ */
 
 //#[derive(Debug)]
 pub struct WaitingRoom {
-    //sessions: HashMap<String, Recipient<Message>>,
     sessions: HashMap<String, actix::Addr<ConnectedUser>>,
-    rooms: HashMap<String, HashSet<String>>,
     lobby: Addr<Lobby>,
     state: actix_web::web::Data<AppState>
 }
@@ -39,24 +44,25 @@ impl Actor for WaitingRoom {
 
 impl WaitingRoom {
     pub fn new(state:actix_web::web::Data<AppState>) -> WaitingRoom {
-        let mut rooms = HashMap::new();
-        rooms.insert("main".to_owned(), HashSet::new());
         println!("Starting WaitingRoom!");
 
         WaitingRoom {
             sessions: HashMap::new(),
-            rooms,
             lobby: Lobby::new(state.clone()).start(),
             state:state.clone()
         }
     }
 }
 
+/*
+    Handler for messages from client. Will only reply to Auth messages, all others are deined
+ */
 impl Handler<SocketMessage> for WaitingRoom {
     type Result = ();
     
     fn  handle(&mut self, msg: SocketMessage, ctx: &mut Context<Self>)  {
         match msg.code {
+            // Handle auth message. If authorized, reply with address to Lobby
             MessageType::Auth => {
                 let jwt_secret: String = std::env::var("JWT_SECRET").expect("JWT SECRET must be set!");
                 let key: Hmac<Sha256> = Hmac::new_from_slice(jwt_secret.as_bytes()).unwrap();
@@ -83,7 +89,11 @@ impl Handler<SocketMessage> for WaitingRoom {
 
                                 let future = async move {
                                     let username = get_username(somestate, value.user_id.clone()).await;
-                                    msg.addr.do_send(Message(format!("Username pulled from DB: {:?},", username.to_string())));
+                                    msg.addr.do_send(ServerMessage{
+                                        context: String::from("waiting_room"),
+                                        code: String::from("debug"),
+                                        data: MessageData::Message(format!("Username pulled from DB: {:?},", username.to_string())),
+                                    });
                                     
                                     // send lobby address to ConenctedUser
                                     msg.addr.do_send(Authorized {
@@ -104,43 +114,50 @@ impl Handler<SocketMessage> for WaitingRoom {
                                 
                                 
                             },
-                            Err(_) => msg.addr.do_send(Message("Didn't authenticate".to_string()))
+                            Err(_) => msg.addr.do_send(ServerMessage {
+                                context: String::from("error"),
+                                code: String::from("auth"),
+                                data: MessageData::Message(String::from("Didn't authenticate"))
+                            })
                         }
                     }    
-                    _ => msg.addr.do_send(Message("👉👈 wrong data".to_string()))
+                    _ => msg.addr.do_send(ServerMessage {
+                            context: String::from("error"),
+                            code: String::from("auth"),
+                            data: MessageData::Message(String::from("👉👈 wrong data"))
+                        })
                 }
-                //let token_string: &str = content.data.as_str();
-                /* 
-                msg.addr.do_send(Authorized {
-                    addr: self.lobby.clone()
-                });
-                self.lobby.do_send(AuthorizedUser {
-                    addr:msg.addr
-                });
-                */
             }
-            _ => msg.addr.do_send(Message("uwu Unauthorized 👉👈".to_string()))
+            _ => msg.addr.do_send(ServerMessage {
+                    context: String::from("error"),
+                    code: String::from("auth"),
+                    data: MessageData::Message(String::from("uwu Unauthorized 👉👈"))
+                })
         }
     }
 }
 
+// handle connect message from connected_user
 impl Handler<Connect> for WaitingRoom {
     type Result = ();
 
-    fn handle(&mut self, msg: Connect, ctx: &mut Context<Self>)  {
+    fn handle(&mut self, msg: Connect, _ctx: &mut Context<Self>)  {
         self.sessions.insert(msg.user_id, msg.addr);
         println!("Someoneone connected. Number of users in sessions: {:?}", self.sessions.len());
     }
 }
 
+// handle disconnect message from connected_user
 impl Handler<Disconnect> for WaitingRoom {
     type Result = ();
 
-    fn handle(&mut self, msg: Disconnect, ctx: &mut Context<Self>)  {
+    fn handle(&mut self, msg: Disconnect, _ctx: &mut Context<Self>)  {
         self.sessions.remove(&msg.user_id);
         
+        /* 
         for (_, addr) in self.sessions.iter() {
             addr.do_send(Message(format!("User disconnected. Current users: {:?}", self.sessions.len())))
         }
+        */
     }
 }

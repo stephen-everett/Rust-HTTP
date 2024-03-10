@@ -1,4 +1,4 @@
-use actix_web::{body, post, web::{Data, Json, ReqData}, HttpResponse, HttpResponseBuilder, Responder};
+use actix_web::{ post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::{app_state::{AppState, TokenClaims},
                      user::{UpdatePIN,FirstName,LastName,UpdatePhoneNumber,
                             UpdateEmail,UpdatePassword,Username,
@@ -23,7 +23,7 @@ async fn update_username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>
                     .bind(token.user_id.to_string())
                     .execute(&state.db)
                 .await{
-                    Ok(user)=>HttpResponse::Ok().json("updated username"),
+                    Ok(_)=>HttpResponse::Ok().json("updated username"),
                     Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
                 }
             }
@@ -44,7 +44,7 @@ async fn update_first_name(state:Data<AppState>,token: Option<ReqData<TokenClaim
             .bind(token.user_id.to_string())
             .execute(&state.db)
         .await{
-            Ok(name)=> HttpResponse::Ok().json("First name has been changed"),
+            Ok(_)=> HttpResponse::Ok().json("First name has been changed"),
             Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },
@@ -64,7 +64,7 @@ async fn update_last_name(state:Data<AppState>,token: Option<ReqData<TokenClaims
                 .bind(token.user_id.to_string())
                 .execute(&state.db)
             .await{
-                Ok(name)=> HttpResponse::Ok().json("last name has been changed"),
+                Ok(_)=> HttpResponse::Ok().json("last name has been changed"),
                 Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },
@@ -87,7 +87,7 @@ async fn update_phone_number(state:Data<AppState>,token: Option<ReqData<TokenCla
                     .bind(token.user_id.to_string())
                     .execute(&state.db)
                 .await{
-                    Ok(name)=> HttpResponse::Ok().json("Phone number has been changed"),
+                    Ok(_)=> HttpResponse::Ok().json("Phone number has been changed"),
                     Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
                 }
             }
@@ -112,7 +112,7 @@ async fn update_email(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,b
                     .bind(token.user_id.to_string())
                     .execute(&state.db)
                 .await{
-                    Ok(name)=> HttpResponse::Ok().json("email has been changed"),
+                    Ok(_)=> HttpResponse::Ok().json("email has been changed"),
                     Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
                 }
             }
@@ -133,7 +133,7 @@ async fn update_pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
                 .bind(token.user_id.to_string())
                 .execute(&state.db)
             .await{
-                Ok(name)=> HttpResponse::Ok().json("PIN has been changed"),
+                Ok(_)=> HttpResponse::Ok().json("PIN has been changed"),
                 Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },
@@ -160,7 +160,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
                 .bind(token.user_id.to_string())
                 .execute(&state.db)
             .await{
-                Ok(name)=> HttpResponse::Ok().json("Password has been changed"),
+                Ok(_)=> HttpResponse::Ok().json("Password has been changed"),
                 Err(err)=> HttpResponse::InternalServerError().json(format!("{:?}",err))
             }
          },

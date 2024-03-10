@@ -1,4 +1,9 @@
 
+/*
+    Author: Stephen Everett
+    The endpoints used for managing friends and friends requests
+ */
+
 use actix_web::{get, post, web::{Data, ReqData, Json}, Responder, HttpResponse};
 use crate::structs::{
     app_state::{AppState, TokenClaims},

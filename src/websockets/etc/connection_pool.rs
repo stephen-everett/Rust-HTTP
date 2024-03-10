@@ -1,3 +1,9 @@
+/*
+    Author: Stephen Everett
+
+    Server is an enum that can be of type WaitingRoom, or Lobby
+ */
+
 use actix::{Message, Addr};
 
 use crate::websockets::{
@@ -13,6 +19,7 @@ pub enum Server {
     Lobby(Addr<Lobby>)
 }
 
+// send messages to the correct server
 impl Server {
     pub fn do_send(&self, msg: SocketMessage) {
         match self {

@@ -1,5 +1,5 @@
-use actix_web::{body, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
-use crate::structs::{app_state::{AppState, TokenClaims}};
+use actix_web::{ post, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::bank_information::BankInformation;
 use crate::structs::user::Picture;
 
@@ -17,8 +17,8 @@ async fn add_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:J
                 .bind(body.account_number.clone())
                 .execute(&state.db)
             .await{
-                Ok(bank) => HttpResponse::Ok().json("bank added"),
-                Err(err) => HttpResponse::InternalServerError().json("Failure to add a bank")
+                Ok(_) => HttpResponse::Ok().json("bank added"),
+                Err(_) => HttpResponse::InternalServerError().json("Failure to add a bank")
             }
         },
         None => HttpResponse::InternalServerError().json("Something was wrong with token")

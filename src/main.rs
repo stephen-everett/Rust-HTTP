@@ -1,15 +1,12 @@
-use actix_web::web::get;
 /*
     Third Party Module
  */
 // actix
-use actix_web::{web, web::Data, App, HttpServer, Error, HttpRequest, HttpResponse};
+use actix_web::{web, web::Data, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 
 // actix websockets
-use actix_web_actors::ws;
-use actix::{Actor, StreamHandler, Addr};
-use actix_web::get;
+use actix::Actor;
 
 // load environment variables and PgPool
 use dotenv::dotenv;
@@ -25,7 +22,7 @@ use hello_rocket::structs::app_state::AppState;
 // API Endpoints
 //mod routes;
 use hello_rocket::routes::{
-    app::{delete_user::delete_user, get_user_info::user_info, search::search_user,
+    app::{delete_user::delete_user, get_user_info::{user_info, other_user}, search::search_user,
           update_user::{update_first_name,update_last_name,update_email,update_password,
                         update_pin,update_username,update_phone_number, update_picture},
           friends::{send_friend_request, accept_friend_request, get_accepted_friends, 
@@ -40,33 +37,8 @@ use hello_rocket::routes::{
 
 
 // Validate JWT (Authentication)
-//mod middleware;
 use hello_rocket::middleware::validator::validator;
-
-//mod experimental;
-//use experimental::chat::actors::{connected_user::{ConnectedUser, Server}, waiting_room::WaitingRoom};
-
-//mod websockets;
-use hello_rocket::websockets::actors::{connected_user::ConnectedUser, waiting_room::WaitingRoom};
-use hello_rocket::websockets::etc::connection_pool::Server;
-
-
-/*
-    Temport inline echo server
- */
-/* 
-#[get("echo")]
-async fn index(req:HttpRequest, stream: web::Payload, server: Data<Addr<WaitingRoom>>) -> Result<HttpResponse, Error> {
-    ws::start(ConnectedUser {
-        user_id: String::from(""),
-        username: String::from(""),
-        room: String::from("main"),
-        addr: Server::WaitingRoom(server.get_ref().clone())
-    }, &req, stream)
-}
-*/
-
-
+use hello_rocket::websockets::actors::waiting_room::WaitingRoom;
 
 // Main function to start the server and provide access to endpoints
 // Authors: Stephen Everett, Luis Baca
@@ -124,6 +96,7 @@ async fn main() -> std::io::Result<()> {
                         .service(search_user)
                         .service(delete_user)
                         .service(user_info)
+                        .service(other_user)
                         .service(
                             web::scope("/add")
                             .service(add_picture)

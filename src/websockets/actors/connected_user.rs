@@ -10,6 +10,7 @@
     back a response, which is handled here.
  */
 
+ // imports
 use actix::{Actor, StreamHandler, AsyncContext};
 use actix_web_actors::ws;
 use actix::prelude::*;
@@ -17,7 +18,10 @@ use rand::Rng;
 use std::time::{Duration, Instant};
 
 use crate::websockets::{
-    etc::connection_pool::Server,
+    etc::{
+        connection_pool::Server,
+        ws_structs::WsUser,
+    },
     messages::{
         user_message::{UserMessage, SocketMessage, Connect, Disconnect},
         server_message::{Message, Authorized, JoinedLobby, ServerMessage, LobbyState}
@@ -34,11 +38,15 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 pub struct ConnectedUser{
     pub user_id: String,
     pub username: String,
+    pub user: WsUser,
     pub room: String,
     pub addr: Server,
     pub hb: Instant,
     pub lobby_id: String,
 }
+
+// implement heartbeat. This sends a ping to the every HEARTBEAT_INTERVAL and will disconnect
+// if it doesn't get a response
 impl ConnectedUser {
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
@@ -62,6 +70,7 @@ impl ConnectedUser {
     }
 }
 
+// Implement actor for ConnectedUser so it can be used with WS framework
 impl Actor for ConnectedUser {
     type Context = ws::WebsocketContext<Self>;
 
@@ -83,6 +92,7 @@ impl Actor for ConnectedUser {
     }
 }
 
+// handle generic messages 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         match msg {
@@ -100,6 +110,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
                 });
                 ctx.stop();
             }
+            // forward any non-generic message to the server
             Ok(ws::Message::Text(text)) => {
                 match serde_json::from_str::<UserMessage>(&text) {
                     Ok(content) => self.addr.do_send(SocketMessage {
@@ -118,6 +129,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
     }
 }
 
+/*
+    Handles messages from server
+ */
 impl Handler<Message> for ConnectedUser {
     type Result = ();
 
