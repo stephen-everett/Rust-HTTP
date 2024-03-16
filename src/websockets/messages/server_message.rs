@@ -1,5 +1,5 @@
 use actix::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use crate::websockets::actors::{connected_user::ConnectedUser, lobby::Lobby};
 use crate::structs::receipt_item::ReceiptItem;
 
@@ -57,7 +57,7 @@ pub struct User {
     pub user_id:String,
     pub username: String,
 }
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Deserialize)]
 pub struct DUser {
     pub user_id:String,
 }
