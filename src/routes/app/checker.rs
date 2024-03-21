@@ -22,14 +22,18 @@ async fn isPassword(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
                             .hash()
                             .unwrap();
                         let incoming_password = Password{ pass: hash};
-                        match password == incoming_password{
-                            true => HttpResponse::Ok().status(StatusCode::OK),
-                            false => HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST),
+                        //match password == incoming_password{
+                        match password == incoming_password.pass {
+                            //true => HttpResponse::Ok().status(StatusCode::OK),
+                            true => HttpResponse::Ok(),
+                            //false => HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST),
+                            false => HttpResponse::BadRequest()
                         }
 
                     },
                     Err(err)=>{
-                        HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST)
+                        //HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST)
+                        HttpResponse::BadRequest()
                     }
                 }
         }, 
