@@ -9,7 +9,7 @@ use crate::routes::auth::register::{unique_phone,unique_email,unique_username};
 /// The user sends a new username to be d on the database. The function is going to check if the username is already
 /// in the database. If it is not in the database, then the username would be changed in database if it is available.
 #[post("/username")]
-async fn _username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<Username>)->impl Responder{
+async fn update_username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<Username>)->impl Responder{
     match token{
         Some(token) => {
             if !unique_username(state.clone(), body.name.clone()).await{
@@ -34,7 +34,7 @@ async fn _username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:
 
 /// s the first_name of the user
 #[post("/first_name")]
-async fn _first_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>, body:Json<FirstName>) -> impl Responder{
+async fn update_first_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>, body:Json<FirstName>) -> impl Responder{
     match token {
         Some(token)=>{
         //let name: FirstName = body.into_inner();
@@ -54,7 +54,7 @@ async fn _first_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>, b
 
 /// Changes the last name of the user
 #[post("/last_name")]
-async fn _last_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<LastName>) -> impl Responder{
+async fn update_last_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<LastName>) -> impl Responder{
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
@@ -74,7 +74,7 @@ async fn _last_name(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
 
 /// s the phone_number of the user and checks if someone else already has the phone_number
 #[post("/phone_number")]
-async fn _phone_number(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<PhoneNumber>) -> impl Responder{
+async fn update_phone_number(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<PhoneNumber>) -> impl Responder{
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
@@ -98,7 +98,7 @@ async fn _phone_number(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,
 
 /// s the email for the user and checks if the email is unique and free
 #[post("/email")]
-async fn _email(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Email>) -> impl Responder{
+async fn update_email(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Email>) -> impl Responder{
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
@@ -123,7 +123,7 @@ async fn _email(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Js
 
 /// s the PIN 
 #[post("/pin")]
-async fn _pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<PIN>) -> impl Responder{
+async fn update_pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<PIN>) -> impl Responder{
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
@@ -143,7 +143,7 @@ async fn _pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json
 
 /// the user sends a password where it is going to be hashed to be stored in database
 #[post("/password")]
-async fn _password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>, body:Json<Password>) -> impl Responder{
+async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>, body:Json<Password>) -> impl Responder{
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
@@ -171,7 +171,7 @@ async fn _password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>, bod
 
 /// changes the current picture to a new one
 #[post("/picture")]
-async fn _picture(state: Data<AppState>, token: Option<ReqData<TokenClaims>>, body:Json<Picture>)-> impl Responder{
+async fn update_picture(state: Data<AppState>, token: Option<ReqData<TokenClaims>>, body:Json<Picture>)-> impl Responder{
     match token{
         Some(token) => {
            let pic_q = " FROM profile_pictures SET picture = $1 WHERE user_id = $2";

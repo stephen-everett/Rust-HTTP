@@ -1,4 +1,4 @@
-use actix_web::{ http::StatusCode, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::{Password,PIN};
 use argonautica::Hasher;
