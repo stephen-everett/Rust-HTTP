@@ -7,7 +7,7 @@ use crate::structs::user::Picture;
 #[post("/bank")]
 async fn add_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<BankInformation>)-> impl Responder{
     match token{
-        Some(token) =>{
+        Some(token) => {
             // let bank_stuff = *body.info;
             let add_bank_query = "INSERT INTO bank(user_id,bank_name,routing_number,account_number)VALUES($1,$2,$3,$4)";
             match sqlx::query(add_bank_query)

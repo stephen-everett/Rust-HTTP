@@ -6,3 +6,4 @@ pub mod friends;
 pub mod post_receipt;
 pub mod add;
 pub mod get_profile_pic;
+pub mod checker;

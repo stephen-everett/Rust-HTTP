@@ -84,26 +84,26 @@ pub struct Username{
     pub name:String
 }
 #[derive(FromRow,Serialize,Deserialize)]
-pub struct UpdateEmail{
+pub struct Email{
     pub name: String
 }
 #[derive(FromRow,Serialize,Deserialize)]
-pub struct UpdatePhoneNumber{
+pub struct PhoneNumber{
    pub number: String
 }
-#[derive(FromRow,Serialize,Deserialize)]
-pub struct UpdatePassword{
+#[derive(FromRow,Serialize,Deserialize,PartialEq)]
+pub struct Password{
     pub pass: String
 }
 #[derive(FromRow,Serialize,Deserialize)]
-pub struct UpdatePIN{
+pub struct PIN{
    pub pin: String
 }
 
 #[derive(FromRow,Serialize,Deserialize)]
 pub struct Picture{
     // pub user_id: string,
-    pub picture: String
+    pub picture: Vec<u8>
 }
 
 
