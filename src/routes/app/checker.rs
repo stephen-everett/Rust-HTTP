@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use actix_web::{ http::StatusCode, post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::{Password,PIN};
@@ -21,19 +23,19 @@ async fn isPassword(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
                             .with_secret_key(hash_secret)
                             .hash()
                             .unwrap();
-                        let incoming_password = Password{ pass: hash};
+                        let incoming_password = Password{pass: hash};
                         match password == incoming_password{
                             true => HttpResponse::Ok().status(StatusCode::OK),
-                            false => HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST),
+                            false => HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST)
                         }
-
                     },
                     Err(err)=>{
                         HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST)
                     }
                 }
         }, 
-        None => HttpResponse::InternalServerError().json("Something was wrong with token")  
+        None => HttpResponse::InternalServerError().json("no")
+        
     }
 
 }
