@@ -95,7 +95,7 @@ pub struct PhoneNumber{
 pub struct Password{
     pub pass: String
 }
-#[derive(FromRow,Serialize,Deserialize)]
+#[derive(FromRow,Serialize,Deserialize,PartialEq)]
 pub struct PIN{
    pub pin: String
 }
