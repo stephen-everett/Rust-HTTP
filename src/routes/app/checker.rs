@@ -22,8 +22,8 @@ async fn isPassword(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
                             .hash()
                             .unwrap();
                         let incoming_password = Password{ pass: hash};
-                        //match password == incoming_password{
-                        match password == incoming_password.pass {
+                        match password == incoming_password{
+                        // match password == incoming_password.pass {
                             //true => HttpResponse::Ok().status(StatusCode::OK),
                             true => HttpResponse::Ok(),
                             //false => HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST),
@@ -37,7 +37,7 @@ async fn isPassword(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
                     }
                 }
         }, 
-        None => HttpResponse::InternalServerError().json("Something was wrong with token")  
+        None => HttpResponse::BadRequest() 
     }
 
 }
