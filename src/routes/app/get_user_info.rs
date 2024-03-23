@@ -25,6 +25,7 @@ async fn user_info(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) 
     }
 }
 
+/// gets all the user information except pin and password
 #[post("/get_user")]
 async fn other_user(state: Data<AppState>, body: Json<RequestId>) -> impl Responder{
 

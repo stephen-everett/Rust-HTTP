@@ -3,8 +3,10 @@ use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::{Password,PIN};
 use argonautica::{Hasher, Verifier};
 
+
+/// Check if password is correct with hashed value from database
 #[post("/isPassword")]
-async fn is_Password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
+async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
     match token {
         Some(token) => {
             let pas_q = "SELECT password FROM users WHERE user_id = $1";
@@ -30,7 +32,7 @@ async fn is_Password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
                             false => HttpResponse::BadRequest()
                         }
                     },
-                    Err(err)=>{
+                    Err(_err)=>{
                         //HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST)
                         HttpResponse::BadRequest()
                     }
@@ -42,6 +44,7 @@ async fn is_Password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
 }
 
 
+/// check if incoming pin is valid with stored pin
 #[post("/isPin")]
 async fn is_pin(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<PIN>)-> impl Responder{
     match token {

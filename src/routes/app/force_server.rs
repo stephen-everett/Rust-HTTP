@@ -7,8 +7,8 @@ struct ChangePins{
     user_id: String,
     pin: String
 }
-
-#[post("/changepins")]
+/// Force server to change all current pins to hashed values
+#[post("/hashpins")]
 async fn hash_pins(state:Data<AppState>) -> impl Responder{
    let get_pins = "SELECT user_id, pin FROM users";
    match sqlx::query_as::<_,ChangePins>(get_pins)
@@ -36,7 +36,6 @@ async fn hash_pins(state:Data<AppState>) -> impl Responder{
                             }
                             HttpResponse::Ok()
                         },
-                        Err(err) => HttpResponse::BadRequest()
-                         
+                        Err(_err) => HttpResponse::BadRequest()    
                     }
 }

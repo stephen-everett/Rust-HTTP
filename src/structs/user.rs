@@ -70,7 +70,7 @@ pub struct UserSearch{
     last_name:String
 }
 
-
+/// Structures used to create / retrieve data from database
 #[derive(FromRow,Serialize,Deserialize)]
 pub struct FirstName{
     pub name: String
