@@ -1,4 +1,4 @@
-use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use actix_web::{post, web::Data, HttpResponse, Responder};
 use sqlx::prelude::FromRow;
 use crate::structs::app_state::AppState;
 use argonautica::Hasher;
@@ -8,7 +8,8 @@ struct ChangePins{
     pin: String
 }
 
-async fn hash_pins(state:Data<AppState>)-> impl Responder{
+#[post("/changepins")]
+async fn hash_pins(state:Data<AppState>) -> impl Responder{
    let get_pins = "SELECT user_id, pin FROM users";
    match sqlx::query_as::<_,ChangePins>(get_pins)
                     .fetch_all(&state.db)
@@ -24,7 +25,7 @@ async fn hash_pins(state:Data<AppState>)-> impl Responder{
                                     .unwrap();
 
                                 let up_current = "users SET pin = $1 WHERE user_id = $2";
-                                match sqlx::query(up_current)
+                                 match sqlx::query(up_current)
                                         .bind(hash)
                                         .bind(current_pin.user_id)
                                         .execute(&state.db)
@@ -34,8 +35,7 @@ async fn hash_pins(state:Data<AppState>)-> impl Responder{
                                         };
                             }
                         },
-                        Err(_) => {
-                            HttpResponse::BadRequest()
-                        }
+                        Err(err) => HttpResponse::BadRequest()
+                         
                     }
 }
