@@ -27,13 +27,14 @@ async fn hash_pins(state:Data<AppState>) -> impl Responder{
                                 let up_current = "users SET pin = $1 WHERE user_id = $2";
                                  match sqlx::query(up_current)
                                         .bind(hash)
-                                        .bind(current_pin.user_id)
+                                        .bind(current_pin.user_id.clone())
                                         .execute(&state.db)
                                         .await{
-                                            Ok(_)=>HttpResponse::Ok(),
-                                            Err(_)=>HttpResponse::BadRequest()
+                                            Ok(_)=> (),
+                                            Err(_)=> return HttpResponse::BadRequest()
                                         };
                             }
+                            HttpResponse::Ok()
                         },
                         Err(err) => HttpResponse::BadRequest()
                          
