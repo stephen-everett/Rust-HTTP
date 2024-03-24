@@ -1,8 +1,10 @@
 use actix_web::web::Data;
 use sqlx::FromRow;
-use crate::structs::{
-    app_state::AppState,
-    receipt_item::ReceiptItem
+use crate::{
+    structs::{
+        app_state::AppState, lobby::LobbyReceipt, receipt_item:: ReceiptItem
+    },
+    routes::app::post_receipt::{get_receipt_items, resolve_header, get_mods}
 };
 
 #[derive(FromRow)]
@@ -25,17 +27,25 @@ pub async fn get_username(state:Data<AppState>, id:String) -> String{
     }
 }
 
-pub async fn get_receipt(state:Data<AppState>, id:String) -> Vec<ReceiptItem>{
-    // get search parameter from body
-    // query
-    match sqlx::query_as::<_,ReceiptItem>(
-        "SELECT lobby_id, sku, name, quantity FROM receipt_item JOIN lobby USING(lobby_id) JOIN menu_item USING(sku) WHERE lobby_id = $1",
-    )
-    .bind(id.parse::<i32>().unwrap())
-    .fetch_all(&state.db)
-    .await
-    {
-        Ok(data) => data,
-        Err(_) => Vec::new()
-    }
+pub async fn get_receipt(state:Data<AppState>, id:String) -> Option<LobbyReceipt>{
+   match get_receipt_items(state.clone(), id.clone()).await {
+        Some(receipt_items) => {
+            match resolve_header(state.clone(), id.clone()).await {
+                Some(header) => {
+                    match get_mods(state.clone(), id.clone()).await {
+                        Some(mods) => {
+                            return Some(LobbyReceipt {
+                                header:header,
+                                menu_items:receipt_items,
+                                modifiers:mods
+                            })
+                        }
+                        None => None
+                    }
+                },
+                None => None
+            }
+        },
+        None => None
+   }
 }

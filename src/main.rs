@@ -30,7 +30,7 @@ use hello_rocket::routes::{
             get_incoming_friends, get_outgoing_friends, send_friend_request,
         },
         get_user_info::{other_user, user_info},
-        post_receipt::{/*join_lobby,*/ post_receipt},
+        post_receipt::{get_receipt, post_receipt},
         search::{search_user, search_user_bank, search_user_fname, search_user_lname},
         update_user::{
             update_email, update_first_name, update_last_name, update_password,
@@ -93,7 +93,7 @@ async fn main() -> std::io::Result<()> {
                                     .service(test_auth),
                             ),
                     )
-                    .service(web::scope("/pos").service(post_receipt)/* .service(join_lobby)*/)
+                    .service(web::scope("/pos").service(post_receipt).service(get_receipt))
                     .service(
                         web::scope("/app")
                             .wrap(bearer_middleware)

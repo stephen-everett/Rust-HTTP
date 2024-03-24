@@ -138,13 +138,26 @@ impl Handler<SocketMessage> for Lobby {
                                 let lobby_id_moved = lobby_id.clone();
                                 let future = async move {
                                     let receipt = get_receipt(somestate, lobby_id_moved).await;
-                                    let lobby_state = LobbyState::new(users, receipt);
-                                    let message = ServerMessage {
-                                        context: String::from("lobby"),
-                                        code: String::from("state"),
-                                        data: MessageData::ServerState(lobby_state),
-                                    };
-                                    msg.addr.do_send(message);
+                                    match receipt {
+                                        Some(lobby_receipt) => {
+                                            let lobby_state = LobbyState::new(users, lobby_receipt);
+                                            let message = ServerMessage {
+                                                context: String::from("lobby"),
+                                                code: String::from("state"),
+                                                data: MessageData::ServerState(lobby_state),
+                                            };
+                                            msg.addr.do_send(message);
+                                        }
+                                        None => {
+                                            msg.addr.do_send(ServerMessage {
+                                                context: String::from("lobby"),
+                                                code: String::from("err"),
+                                                data: MessageData::Message("Problem retrieving lobby state".to_string())
+                                            })
+                                        }
+                                    }
+                                    
+                                    
                                 };
                                 future.into_actor(self).spawn(ctx);
 
@@ -165,13 +178,26 @@ impl Handler<SocketMessage> for Lobby {
                                 let lobby_id_moved = lobby_id.clone();
                                 let future = async move {
                                     let receipt = get_receipt(somestate, lobby_id_moved).await;
-                                    let lobby_state = LobbyState::new(users, receipt);
-                                    let message = ServerMessage {
-                                        context: String::from("lobby"),
-                                        code: String::from("state"),
-                                        data: MessageData::ServerState(lobby_state),
-                                    };
-                                    msg.addr.do_send(message);
+                                    match receipt {
+                                        Some(lobby_receipt) => {
+                                            let lobby_state = LobbyState::new(users, lobby_receipt);
+                                            let message = ServerMessage {
+                                                context: String::from("lobby"),
+                                                code: String::from("state"),
+                                                data: MessageData::ServerState(lobby_state),
+                                            };
+                                            msg.addr.do_send(message);
+                                        }
+                                        None => {
+                                            msg.addr.do_send(ServerMessage {
+                                                context: String::from("lobby"),
+                                                code: String::from("err"),
+                                                data: MessageData::Message("Problem retrieving lobby state".to_string())
+                                            })
+                                        }
+                                    }
+                                    
+                                    
                                 };
                                 future.into_actor(self).spawn(ctx);
 
