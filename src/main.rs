@@ -37,6 +37,8 @@ use hello_rocket::routes::{
             update_phone_number, update_picture, update_pin, update_username,
         },
         get_profile_pic::user_pic,
+        force_server::hash_pins,
+        checker::{is_password,is_pin},
     },
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
@@ -78,6 +80,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(AppState { db: pool.clone() }))
             .service(
                 web::scope("/api")
+                    .service(hash_pins)
                     .service(create_user)
                     .service(basic_auth)
                     .service(
@@ -99,6 +102,10 @@ async fn main() -> std::io::Result<()> {
                             .service(delete_bank)
                             .service(other_user)
                             .service(user_pic)
+                            .service(web::scope("/check")
+                                         .service(is_pin)
+                                         .service(is_password),
+                                )
                             .service(
                                 web::scope("/search")
                                     .service(search_user)
