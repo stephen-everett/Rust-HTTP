@@ -7,7 +7,9 @@
 
 use crate::structs::{
     app_state::AppState,
-    lobby::{ItemModifier, Lobby, LobbyReceipt, ResturauntMenuItem, ResturauntReceipt, StateHeader},
+    lobby::{
+        ItemModifier, Lobby, LobbyReceipt, ResturauntMenuItem, ResturauntReceipt, StateHeader,
+    },
     receipt_item::ReceiptItem,
 };
 use actix_web::{
@@ -26,7 +28,7 @@ pub async fn post_receipt(
     body: web::Json<ResturauntReceipt>,
 ) -> impl Responder {
     println!("Inserting lobby...");
-    match futures::executor::block_on(create_new_lobby(state.clone())) {
+    match create_new_lobby(state.clone()).await {
         Ok(lobby_id) => {
             println!("Lobby inserted: {:?}", lobby_id.clone());
             println!("Creating receipt...");
@@ -147,43 +149,41 @@ pub async fn insert_menu_items(
 #[post("/get_receipt")]
 pub async fn get_receipt(state: Data<AppState>, body: Json<Lobby>) -> impl Responder {
     match get_receipt_items(state.clone(), body.lobby_id.clone()).await {
-        Some(receipt_items) => {
-            match resolve_header(state.clone(), body.lobby_id.clone()).await {
-                Some(header) => {
-                    match get_mods(state, body.lobby_id.clone()).await {
-                        Some(mods) => {
-                            let state = LobbyReceipt {
-                                header: header,
-                                menu_items: receipt_items,
-                                modifiers:mods
-                            };
-                            HttpResponse::Ok().json(state)
-                        }
-                        None => HttpResponse::InternalServerError().json("Could not locate modifiers")
-                    }
+        Some(receipt_items) => match resolve_header(state.clone(), body.lobby_id.clone()).await {
+            Some(header) => match get_mods(state, body.lobby_id.clone()).await {
+                Some(mods) => {
+                    let state = LobbyReceipt {
+                        header: header,
+                        menu_items: receipt_items,
+                        modifiers: mods,
+                    };
+                    HttpResponse::Ok().json(state)
                 }
-                None => HttpResponse::InternalServerError().json("Could not locate header")
-            }
-            
+                None => HttpResponse::InternalServerError().json("Could not locate modifiers"),
+            },
+            None => HttpResponse::InternalServerError().json("Could not locate header"),
         },
         None => HttpResponse::InternalServerError().json("Could not retrieve menu items"),
     }
 }
 
-pub async fn resolve_header(state: Data<AppState>, lobby_id:String) -> Option<StateHeader> {
-    match sqlx::query_as::<_,StateHeader> (
-        "SELECT res_id, lobby_id, receipt_id FROM receipts WHERE lobby_id = $1"
+pub async fn resolve_header(state: Data<AppState>, lobby_id: String) -> Option<StateHeader> {
+    match sqlx::query_as::<_, StateHeader>(
+        "SELECT res_id, lobby_id, receipt_id FROM receipts WHERE lobby_id = $1",
     )
     .bind(lobby_id)
     .fetch_one(&state.db)
     .await
     {
         Ok(header) => Some(header),
-        Err(_) => None
+        Err(_) => None,
     }
 }
 
-pub async fn get_receipt_items(state: Data<AppState>, lobby_id: String) -> Option<Vec<ReceiptItem>> {
+pub async fn get_receipt_items(
+    state: Data<AppState>,
+    lobby_id: String,
+) -> Option<Vec<ReceiptItem>> {
     match sqlx::query_as::<_, ReceiptItem>(
         "
         SELECT receipt_item_id,sku, name, price FROM (
@@ -198,7 +198,7 @@ pub async fn get_receipt_items(state: Data<AppState>, lobby_id: String) -> Optio
     .await
     {
         Ok(receipt_items) => Some(receipt_items),
-        Err(_) => None
+        Err(_) => None,
     }
 }
 
@@ -217,6 +217,6 @@ pub async fn get_mods(state: Data<AppState>, lobby_id: String) -> Option<Vec<Ite
     .await
     {
         Ok(mods) => Some(mods),
-        Err(err) => None
+        Err(err) => None,
     }
 }
