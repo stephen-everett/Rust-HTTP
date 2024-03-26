@@ -41,3 +41,9 @@ pub struct StateHeader {
     pub lobby_id: String,
     pub receipt_id: String
 }
+
+#[derive(Deserialize)]
+pub struct UpdateItem {
+    pub item_id: String,
+    pub lobby_id: String
+}

@@ -47,6 +47,7 @@ pub struct ConnectedUser{
 
 // implement heartbeat. This sends a ping to the every HEARTBEAT_INTERVAL and will disconnect
 // if it doesn't get a response
+
 impl ConnectedUser {
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
@@ -118,7 +119,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ConnectedUser {
                         code: content.code,
                         data: content.data,
                         addr: ctx.address(),
-                        user_id: self.user_id.clone()
+                        user_id: self.user_id.clone(),
+                        lobby_id: self.lobby_id.clone()
                     }),
                     Err(err) => ctx.text(format!("uwu👉👈 there was an error {:?}", err))
                 }

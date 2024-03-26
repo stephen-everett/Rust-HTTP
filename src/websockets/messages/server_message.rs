@@ -62,11 +62,18 @@ pub struct DUser {
     pub user_id:String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ItemClaim {
+    pub item_id: String,
+    pub user_id: String
+}
+
 
 #[derive(Serialize)]
 pub enum MessageData {
     ServerState(LobbyState),
     UserData(User),
     DisconnectedUser(DUser),
-    Message(String)
+    Message(String),
+    Claim(ItemClaim)
 }

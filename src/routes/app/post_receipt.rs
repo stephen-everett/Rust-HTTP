@@ -9,14 +9,18 @@ use crate::structs::{
     app_state::AppState,
     lobby::{
         ItemModifier, Lobby, LobbyReceipt, ResturauntMenuItem, ResturauntReceipt, StateHeader,
+        UpdateItem,
     },
     receipt_item::ReceiptItem,
 };
+
+use crate::websockets::{actors::waiting_room::WaitingRoom, messages::user_message::RemoveItem};
 use actix_web::{
     post, web,
     web::{Data, Json},
     HttpResponse, Responder,
 };
+use actix_web_actors::ws;
 use sqlx::Error;
 use uuid::Uuid;
 
@@ -218,5 +222,30 @@ pub async fn get_mods(state: Data<AppState>, lobby_id: String) -> Option<Vec<Ite
     {
         Ok(mods) => Some(mods),
         Err(err) => None,
+    }
+}
+
+#[post("/delete_item")]
+pub async fn delete_item(state: Data<AppState>, item: Json<UpdateItem>) -> impl Responder {
+    match &state.ws_server {
+        Some(server) => {
+            server.do_send(RemoveItem {
+                item_id: item.item_id.clone(),
+                lobby_id:item.lobby_id.clone()
+            })
+        }
+        None => ()
+    };
+    match sqlx::query(
+        "DELETE FROM menu_items WHERE item_id = (
+            SELECT item_id FROM receipt_items WHERE receipt_item_id = $1
+            )",
+    )
+    .bind(item.item_id.clone())
+    .execute(&state.db)
+    .await
+    {
+        Ok(_) => HttpResponse::Ok().json("Item deleted"),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
     }
 }
