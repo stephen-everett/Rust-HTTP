@@ -19,7 +19,7 @@ use crate::{
     websockets::{
         actors::{connected_user::ConnectedUser, lobby::Lobby},
         messages::{
-            user_message::{SocketMessage, MessageType, Connect, Disconnect},
+            user_message::{SocketMessage, MessageType, Connect, Disconnect, RemoveItem},
             server_message::{Authorized, AuthorizedUser, ServerMessage, MessageData}
         },
         queries::get_username,
@@ -159,5 +159,13 @@ impl Handler<Disconnect> for WaitingRoom {
             addr.do_send(Message(format!("User disconnected. Current users: {:?}", self.sessions.len())))
         }
         */
+    }
+}
+
+impl Handler<RemoveItem> for WaitingRoom {
+    type Result = ();
+
+    fn handle(&mut self, msg:RemoveItem, ctx: &mut Context<Self>) {
+        self.lobby.do_send(msg)
     }
 }
