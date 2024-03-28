@@ -24,7 +24,7 @@ async fn hash_pins(state:Data<AppState>) -> impl Responder{
                                     .hash()
                                     .unwrap();
 
-                                let up_current = "users SET pin = $1 WHERE user_id = $2";
+                                let up_current = "UPDATE users SET pin = $1 WHERE user_id = $2";
                                  match sqlx::query(up_current)
                                         .bind(hash)
                                         .bind(current_pin.user_id.clone())
