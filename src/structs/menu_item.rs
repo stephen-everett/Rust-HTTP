@@ -4,5 +4,6 @@ use serde::Deserialize;
 pub struct MenuItem {
     pub sku: i32,
     pub name: String,
-    pub quantity: i32
+    pub quantity: i32,
+    pub price: i64
 }

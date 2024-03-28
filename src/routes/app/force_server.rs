@@ -1,5 +1,4 @@
 use actix_web::{post, web::Data, HttpResponse, Responder};
-use sqlx::prelude::FromRow;
 use crate::structs::app_state::AppState;
 use argonautica::Hasher;
 #[derive(FromRow)]
