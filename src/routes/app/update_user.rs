@@ -177,7 +177,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
 async fn update_picture(state: Data<AppState>, token: Option<ReqData<TokenClaims>>, body:Json<Picture>)-> impl Responder{
     match token{
         Some(token) => {
-           let pic_q = " FROM profile_pictures SET picture = $1 WHERE user_id = $2";
+           let pic_q = "UPDATE profile_pictures SET picture = $1 WHERE user_id = $2";
            match sqlx::query(pic_q) 
                .bind(body.picture.clone())
                .bind(token.user_id.to_string())
