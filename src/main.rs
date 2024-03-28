@@ -30,7 +30,7 @@ use hello_rocket::routes::{
             get_incoming_friends, get_outgoing_friends, send_friend_request,
         },
         get_user_info::{other_user, user_info},
-        post_receipt::{join_lobby, post_receipt},
+        post_receipt::{get_receipt, post_receipt, delete_item},
         search::{search_user, search_user_bank, search_user_fname, search_user_lname},
         update_user::{
             update_email, update_first_name, update_last_name, update_password,
@@ -71,13 +71,13 @@ async fn main() -> std::io::Result<()> {
        and imported at the top of this file
     */
 
-    let server = WaitingRoom::new(Data::new(AppState { db: pool.clone() })).start();
+    let server = WaitingRoom::new(Data::new(AppState { db: pool.clone(), ws_server: None })).start();
     HttpServer::new(move || {
         // bearer middleware used to verify JWT token on protected routes.
         let bearer_middleware = HttpAuthentication::bearer(validator);
 
         App::new()
-            .app_data(Data::new(AppState { db: pool.clone() }))
+            .app_data(Data::new(AppState { db: pool.clone(), ws_server: Some(server.clone()) }))
             .service(
                 web::scope("/api")
                     .service(hash_pins)
@@ -93,7 +93,12 @@ async fn main() -> std::io::Result<()> {
                                     .service(test_auth),
                             ),
                     )
-                    .service(web::scope("/pos").service(post_receipt).service(join_lobby))
+                    .service(
+                        web::scope("/pos")
+                            .service(post_receipt)
+                            .service(get_receipt)
+                            .service(delete_item)
+                        )
                     .service(
                         web::scope("/app")
                             .wrap(bearer_middleware)

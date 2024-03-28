@@ -3,8 +3,15 @@ use sqlx::FromRow;
 
 #[derive(Serialize, FromRow, Debug)]
 pub struct ReceiptItem {
-    pub lobby_id: i32,
-    pub sku: i32,
+    pub receipt_item_id: String,
+    pub sku: String,
     pub name: String,
-    pub quantity: i32
+    pub price: i64
+}
+
+#[derive(Serialize, FromRow)]
+pub struct ItemModifier {
+    pub receipt_item_id: String,
+    pub modifier_name: String,
+    pub modifier_price: i64
 }

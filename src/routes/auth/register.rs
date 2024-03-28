@@ -65,9 +65,12 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
         let mut hasher = Hasher::default();
         let hash = hasher
             .with_password(user.password)
-            .with_secret_key(hash_secret)
+            .with_secret_key(hash_secret.clone())
             .hash()
             .unwrap();
+
+        // hash pin
+        let pin_hash = hasher.with_password(user.pin).with_secret_key(hash_secret).hash().unwrap();
         
         // insert user into user table
         match sqlx::query(
@@ -81,7 +84,7 @@ async fn create_user(state: Data<AppState>, body:Json<CreateUserBody>) -> impl R
         .bind(user.phone_number)
         .bind(user.birthdate) 
         .bind(hash)
-        .bind(user.pin)
+        .bind(pin_hash)
         .fetch_one(&state.db)
         .await
         {

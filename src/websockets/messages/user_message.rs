@@ -3,7 +3,10 @@ use serde_json::Value;
 use actix::Message as ActixMessage;
 use actix::prelude::*;
 
-use crate::websockets::actors::connected_user::ConnectedUser;
+use crate::{
+    websockets::actors::connected_user::ConnectedUser,
+    structs::lobby::UpdateItem
+};
 
 
 #[derive(Serialize, Deserialize, ActixMessage)]
@@ -20,7 +23,8 @@ pub struct SocketMessage {
     pub data: Value,
     pub addr: Addr<ConnectedUser>,
     pub user_id:String,
-    pub username:String
+    pub username:String,
+    pub lobby_id:String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -29,7 +33,8 @@ pub enum MessageType {
     Join,
     Err,
     Info,
-    Auth
+    Auth,
+    ItemClaim
 }
 
 #[derive(Message)]
@@ -45,4 +50,11 @@ pub struct Connect {
 pub struct Disconnect {
     pub user_id: String,
     pub lobby_id:String
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct RemoveItem {
+    pub item_id:String,
+    pub lobby_id: String
 }

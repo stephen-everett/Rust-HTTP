@@ -127,9 +127,12 @@ async fn update_pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
+            let mut hasher = Hasher::default();
+            let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
+            let pin_hash = hasher.with_password(body.pin.clone()).with_secret_key(hash_secret).hash().unwrap();
             let up_query = " users SET pin = $1 WHERE user_id = $2";
             match sqlx::query(up_query)
-                .bind(body.pin.clone())
+                .bind(pin_hash)
                 .bind(token.user_id.to_string())
                 .execute(&state.db)
             .await{
@@ -174,7 +177,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
 async fn update_picture(state: Data<AppState>, token: Option<ReqData<TokenClaims>>, body:Json<Picture>)-> impl Responder{
     match token{
         Some(token) => {
-           let pic_q = " FROM profile_pictures SET picture = $1 WHERE user_id = $2";
+           let pic_q = "UPDATE profile_pictures SET picture = $1 WHERE user_id = $2";
            match sqlx::query(pic_q) 
                .bind(body.picture.clone())
                .bind(token.user_id.to_string())
