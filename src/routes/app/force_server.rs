@@ -1,7 +1,7 @@
 use crate::structs::app_state::AppState;
 use actix_web::{post, web::Data, HttpResponse, Responder};
-use crate::structs::app_state::AppState;
 use argonautica::Hasher;
+use sqlx::prelude::FromRow;
 #[derive(FromRow)]
 struct ChangePins {
     user_id: String,
