@@ -16,7 +16,7 @@ async fn update_username(state:Data<AppState>,token:Option<ReqData<TokenClaims>>
                 return  HttpResponse::Conflict().json("bad name");
             }
             else{
-                let up_query = " user_profiles SET username = $1                                     
+                let up_query = "UPDATE user_profiles SET username = $1                                     
                                       WHERE user_id = $2";
                 match sqlx::query(up_query)
                     .bind(body.name.clone())
@@ -38,7 +38,7 @@ async fn update_first_name(state:Data<AppState>,token: Option<ReqData<TokenClaim
     match token {
         Some(token)=>{
         //let name: FirstName = body.into_inner();
-        let up_query = " users SET first_name = $1 WHERE user_id = $2";
+        let up_query = "UPDATE users SET first_name = $1 WHERE user_id = $2";
         match sqlx::query(up_query)
             .bind(body.name.clone())
             .bind(token.user_id.to_string())
@@ -58,7 +58,7 @@ async fn update_last_name(state:Data<AppState>,token: Option<ReqData<TokenClaims
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
-            let up_query = " users SET last_name = $1 WHERE user_id = $2";
+            let up_query = "UPDATE users SET last_name = $1 WHERE user_id = $2";
             match sqlx::query(up_query)
                 .bind(body.name.clone())
                 .bind(token.user_id.to_string())
@@ -81,7 +81,7 @@ async fn update_phone_number(state:Data<AppState>,token: Option<ReqData<TokenCla
             if !unique_phone(state.clone(),body.number.clone()).await{
                 return  HttpResponse::Conflict().json("Not a vaild Phone number");
             }
-            else{let up_query = " users SET phone_number = $1 WHERE user_id = $2";
+            else{let up_query = "UPDATE users SET phone_number = $1 WHERE user_id = $2";
                 match sqlx::query(up_query)
                     .bind(body.number.clone())
                     .bind(token.user_id.to_string())
@@ -106,7 +106,7 @@ async fn update_email(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,b
                 return HttpResponse::Conflict().json("not a vaild email");
             }
             else{
-                let up_query = " users SET email_address = $1 WHERE user_id = $2";
+                let up_query = "UPDATE users SET email_address = $1 WHERE user_id = $2";
                 match sqlx::query(up_query)
                     .bind(body.name.clone())
                     .bind(token.user_id.to_string())
@@ -130,7 +130,7 @@ async fn update_pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
             let mut hasher = Hasher::default();
             let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
             let pin_hash = hasher.with_password(body.pin.clone()).with_secret_key(hash_secret).hash().unwrap();
-            let up_query = " users SET pin = $1 WHERE user_id = $2";
+            let up_query = " UPDATE users SET pin = $1 WHERE user_id = $2";
             match sqlx::query(up_query)
                 .bind(pin_hash)
                 .bind(token.user_id.to_string())
@@ -150,7 +150,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
     match token {
         Some(token)=>{
             //let name: FirstName = body.into_inner();
-            let up_query = " users SET password = $1 WHERE user_id = $2";
+            let up_query = "UPDATE users SET password = $1 WHERE user_id = $2";
             let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
             let mut hasher = Hasher::default();
             let hash = hasher
