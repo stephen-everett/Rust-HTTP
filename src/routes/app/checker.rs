@@ -4,7 +4,7 @@ use crate::structs::user::{Password,PIN};
 use argonautica::{Hasher, Verifier};
 
 #[post("/password")]
-async fn is_Password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
+async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
     match token {
         Some(token) => {
             let pas_q = "SELECT password FROM users WHERE user_id = $1";
