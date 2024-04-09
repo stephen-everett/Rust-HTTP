@@ -148,8 +148,8 @@ pub async fn insert_menu_items(
     }
     return None;
 }
-// return all menu items associated with a given lobby number
 
+// return all menu items associated with a given lobby number
 #[post("/get_receipt")]
 pub async fn get_receipt(state: Data<AppState>, body: Json<Lobby>) -> impl Responder {
     match get_receipt_items(state.clone(), body.lobby_id.clone()).await {
