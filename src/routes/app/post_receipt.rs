@@ -219,7 +219,7 @@ pub async fn get_mods(state: Data<AppState>, lobby_id: String) -> Option<Vec<Ite
     .await
     {
         Ok(mods) => Some(mods),
-        Err(err) => None,
+        Err(_err) => None,
     }
 }
 
@@ -248,6 +248,8 @@ pub async fn delete_item(state: Data<AppState>, item: Json<UpdateItem>) -> impl 
     }
 }
 
+
+/// updates a menu item from the restaurant pos system
 #[post("update_menu")]
 async fn update_menu_item(state:Data<AppState>, menu_item:Json<ItemModifier>)-> impl Responder{
     match sqlx::query(
@@ -265,3 +267,9 @@ async fn update_menu_item(state:Data<AppState>, menu_item:Json<ItemModifier>)-> 
         Err(err) => HttpResponse::InternalServerError().json(err.to_string()),   
     }
 }
+ 
+
+// #[post("/remove_modifier")]
+// pub async fn remove_modifier(state: Data<AppState>, user: Json<DeleteUser>) -> impl Responder {
+    
+// }
