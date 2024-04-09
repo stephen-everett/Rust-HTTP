@@ -10,6 +10,7 @@ use actix::Actor;
 
 // load environment variables and PgPool
 use dotenv::dotenv;
+
 use sqlx::postgres::PgPoolOptions;
 
 /*
@@ -30,7 +31,7 @@ use hello_rocket::routes::{
             get_incoming_friends, get_outgoing_friends, send_friend_request,
         },
         get_user_info::{other_user, user_info},
-        post_receipt::{get_receipt, post_receipt, delete_item},
+        post_receipt::{get_receipt, post_receipt, delete_item, update_menu_item},
         search::{search_user, search_user_bank, search_user_fname, search_user_lname},
         update_user::{
             update_email, update_first_name, update_last_name, update_password,
@@ -98,6 +99,7 @@ async fn main() -> std::io::Result<()> {
                             .service(post_receipt)
                             .service(get_receipt)
                             .service(delete_item)
+                            .service(update_menu_item)
                         )
                     .service(
                         web::scope("/app")

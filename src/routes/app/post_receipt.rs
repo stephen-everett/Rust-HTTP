@@ -6,12 +6,10 @@
 */
 
 use crate::structs::{
-    app_state::AppState,
-    lobby::{
+    app_state::AppState, lobby::{
         ItemModifier, Lobby, LobbyReceipt, ResturauntMenuItem, ResturauntReceipt, StateHeader,
         UpdateItem,
-    },
-    receipt_item::ReceiptItem,
+    }, menu_item::MenuItem, receipt_item::ReceiptItem
 };
 
 use crate::websockets::{actors::waiting_room::WaitingRoom, messages::user_message::RemoveItem};
@@ -221,7 +219,7 @@ pub async fn get_mods(state: Data<AppState>, lobby_id: String) -> Option<Vec<Ite
     .await
     {
         Ok(mods) => Some(mods),
-        Err(err) => None,
+        Err(_err) => None,
     }
 }
 
@@ -249,3 +247,29 @@ pub async fn delete_item(state: Data<AppState>, item: Json<UpdateItem>) -> impl 
         Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
     }
 }
+
+
+/// updates a menu item from the restaurant pos system
+#[post("update_menu")]
+async fn update_menu_item(state:Data<AppState>, menu_item:Json<ItemModifier>)-> impl Responder{
+    match sqlx::query(
+        "UPDATE item_modifiers SET modifier_name = $1, modifier_price = $2 WHERE item_id = (
+            SELECT item_id FROM receipt_items WHERE receipt_item_id = $3
+            )",
+    )
+    .bind(menu_item.name.clone())
+    .bind(menu_item.price.clone())
+    .bind(menu_item.receipt_item_id.clone())
+    .execute(&state.db)
+    .await
+    {
+        Ok(_) => HttpResponse::Ok().json("Item updated"),
+        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),   
+    }
+}
+ 
+
+// #[post("/remove_modifier")]
+// pub async fn remove_modifier(state: Data<AppState>, user: Json<DeleteUser>) -> impl Responder {
+    
+// }

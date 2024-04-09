@@ -3,9 +3,7 @@ use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::{Password,PIN};
 use argonautica::{Hasher, Verifier};
 
-
-/// Check if password is correct with hashed value from database
-#[post("/isPassword")]
+#[post("/password")]
 async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
     match token {
         Some(token) => {
@@ -19,11 +17,11 @@ async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
                         let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET must be set!");
                         let mut hasher = Hasher::default();
                         let hash = hasher
-                            .with_password(body.pass.clone())
-                            .with_secret_key(hash_secret)
-                            .hash()
-                            .unwrap();
-                        let incoming_password = Password{pass: hash};
+                                            .with_password(body.pass.clone())
+                                            .with_secret_key(hash_secret)
+                                            .hash()
+                                            .unwrap();
+                        let incoming_password = Password{ pass: hash};
                         match password == incoming_password{
                         // match password == incoming_password.pass {
                             //true => HttpResponse::Ok().status(StatusCode::OK),
@@ -31,6 +29,7 @@ async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
                             //false => HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST),
                             false => HttpResponse::BadRequest()
                         }
+
                     },
                     Err(_err)=>{
                         //HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST)
@@ -44,8 +43,7 @@ async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
 }
 
 
-/// check if incoming pin is valid with stored pin
-#[post("/isPin")]
+#[post("/pin")]
 async fn is_pin(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Json<PIN>)-> impl Responder{
     match token {
         Some(token) =>{
