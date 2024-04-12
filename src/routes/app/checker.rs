@@ -27,7 +27,7 @@ async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
                             //true => HttpResponse::Ok().status(StatusCode::OK),
                             true => HttpResponse::Ok(),
                             //false => HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST),
-                            false => HttpResponse::BadRequest()
+                            false => HttpResponse::Forbidden()
                         }
 
                     },
@@ -53,7 +53,7 @@ async fn is_pin(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Jso
                 .fetch_one(&state.db)
                 .await{
                     Ok(pin)=>{
-                        // let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET must be set!");
+                        let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET must be set!");
                         // let mut hasher = Hasher::default();
                         // let hash = hasher
                         //     .with_password(body.pass.clone())
@@ -65,7 +65,7 @@ async fn is_pin(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Jso
                         let is_valid = verifier
                                                 .with_hash(pin.pin)
                                                 .with_password(body.pin.clone())
-                                                .with_secret_key("HASH_SECRET")
+                                                .with_secret_key(hash_secret)
                                                 .verify()
                                                 .unwrap();
                         // if is_valid{
@@ -76,7 +76,7 @@ async fn is_pin(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Jso
                         // }
                         match is_valid{
                             true => HttpResponse::Ok(),
-                            false => HttpResponse::BadRequest()
+                            false => HttpResponse::Forbidden()
                         }
                         
                     },Err(_) => HttpResponse::BadRequest()
