@@ -130,7 +130,7 @@ async fn update_pin(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bod
             let mut hasher = Hasher::default();
             let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
             let pin_hash = hasher.with_password(body.pin.clone()).with_secret_key(hash_secret).hash().unwrap();
-            let up_query = "UPDATE users SET pin = $1 WHERE user_id = $2";
+            let up_query = " UPDATE users SET pin = $1 WHERE user_id = $2";
             match sqlx::query(up_query)
                 .bind(pin_hash)
                 .bind(token.user_id.to_string())
@@ -154,7 +154,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
             let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
             let mut hasher = Hasher::default();
             let hash = hasher
-                .with_password(body.pass.clone())
+                .with_password(body.password.clone())
                 .with_secret_key(hash_secret)
                 .hash()
                 .unwrap();

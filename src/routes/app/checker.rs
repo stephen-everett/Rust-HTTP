@@ -5,6 +5,7 @@ use argonautica::{Hasher, Verifier};
 use tracing::{event, info, Level};
 
 
+// MARK: Password
 #[post("/password")]
 async fn is_password(state:Data<AppState>, token:Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
     match token {
