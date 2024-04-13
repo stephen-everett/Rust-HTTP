@@ -154,7 +154,7 @@ async fn update_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>
             let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET needs to be set!");
             let mut hasher = Hasher::default();
             let hash = hasher
-                .with_password(body.pass.clone())
+                .with_password(body.password.clone())
                 .with_secret_key(hash_secret)
                 .hash()
                 .unwrap();

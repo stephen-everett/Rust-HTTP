@@ -14,20 +14,21 @@ async fn is_password(state: Data<AppState>, token: Option<ReqData<TokenClaims>>,
             .fetch_one(&state.db)
             .await {
                 Ok(password) => {
+					let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET must be set!");
                     let mut verifier = Verifier::default();
                     let is_valid = verifier
-						.with_hash(password.pass)   
-						.with_password(body.pass.clone())
-						.with_secret_key("HASH_SECRET")
+						.with_hash(password.password)   
+						.with_password(&body.password)
+						.with_secret_key(hash_secret)
 						.verify()
 						.unwrap();
 					match is_valid {
-						true => HttpResponse::Ok(),
-						false => HttpResponse::BadRequest()
+						true => HttpResponse::Ok().json("✔️ Password Valid"),
+						false => HttpResponse::Forbidden().json("❌ Password Invalid")
 					}
-                }, Err(_) => HttpResponse::BadRequest()
+                }, Err(err) => HttpResponse::BadRequest().json(err.to_string())
             }
-		},None => HttpResponse::BadRequest()
+		},None => HttpResponse::BadRequest().json("Problem with token")
 	}
 }
 
@@ -43,19 +44,20 @@ async fn is_pin(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:Jso
 				.fetch_one(&state.db)
 				.await {
 					Ok(pin) => {
+						let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET must be set!");
 						let mut verifier = Verifier::default();
 						let is_valid = verifier
 							.with_hash(pin.pin)
 							.with_password(body.pin.clone())
-							.with_secret_key("HASH_SECRET")
+							.with_secret_key(hash_secret)
 							.verify()
 							.unwrap();
 						match is_valid {
-							true => HttpResponse::Ok(),
-							false => HttpResponse::BadRequest()
+							true => HttpResponse::Ok().json("✔️ Pin Valid"),
+							false => HttpResponse::Forbidden().json("❌ Password Invalid")
 						}
-					}, Err(_) => HttpResponse::BadRequest()
+					}, Err(err) => HttpResponse::BadRequest().json(err.to_string())
 				}
-		},None => HttpResponse::BadRequest()
+		},None => HttpResponse::BadRequest().json("Problem with token")
 	}
 }
