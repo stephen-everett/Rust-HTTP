@@ -13,6 +13,9 @@ use dotenv::dotenv;
 
 use sqlx::postgres::PgPoolOptions;
 
+use tracing::{trace, Level,Subscriber};
+use tracing_subscriber;
+
 /*
    Our Modules
 */
@@ -66,6 +69,17 @@ async fn main() -> std::io::Result<()> {
         .connect(&database_url)
         .await
         .expect("Error building a connection pool");
+
+    // Initialize the tracing subscriber
+    // let subscriber = FmtSubscriber::builder()
+    //     .with_max_level(Level::TRACE)
+    //     .finish();
+    // tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    tracing_subscriber::fmt()
+        .with_max_level(Level::INFO)
+        .with_target(false)
+        .with_ansi(false)
+        .init();
 
     /*
        Start the server and use defined endpoints. Endpoints are defined in routes folder

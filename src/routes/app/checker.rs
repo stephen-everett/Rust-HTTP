@@ -2,9 +2,11 @@ use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::{Password,PIN};
 use argonautica::{Hasher, Verifier};
+use tracing::{event, info, Level};
+
 
 #[post("/password")]
-async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
+async fn is_password(state:Data<AppState>, token:Option<ReqData<TokenClaims>>,body:Json<Password>) -> impl Responder{
     match token {
         Some(token) => {
             let pas_q = "SELECT password FROM users WHERE user_id = $1";
@@ -15,14 +17,22 @@ async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
                     Ok(password) => {
                         // let incoming_password = body.pass.clone();
                         let hash_secret = std::env::var("HASH_SECRET").expect("HASH_SECRET must be set!");
-                        let mut hasher = Hasher::default();
-                        let hash = hasher
+                       // let mut hasher = Hasher::default();
+                       // let hash = hasher
+                       //                     .with_password(body.pass.clone())
+                       //                     .with_secret_key(hash_secret)
+                       //                    .hash()
+                       //                    .unwrap();
+                       // let incoming_password = Password{ pass: hash};
+                        let mut verifier = Verifier::default();
+                        let is_valid = verifier
+                                            .with_hash(password.pass)
                                             .with_password(body.pass.clone())
                                             .with_secret_key(hash_secret)
-                                            .hash()
+                                            .verify()
                                             .unwrap();
-                        let incoming_password = Password{ pass: hash};
-                        match password == incoming_password{
+
+                        match is_valid{
                         // match password == incoming_password.pass {
                             //true => HttpResponse::Ok().status(StatusCode::OK),
                             true => HttpResponse::Ok(),
@@ -33,8 +43,11 @@ async fn is_password(state:Data<AppState>,token: Option<ReqData<TokenClaims>>,bo
                     },
                     Err(_err)=>{
                         //HttpResponse::InternalServerError().status(StatusCode::BAD_REQUEST)
+                        // event!(tracing::Level::INFO, "Error: {:?}", _err);
+                        tracing::error!("Error: {:?}", _err);
                         HttpResponse::BadRequest()
-                    }
+                        
+                    }          
                 }
         }, 
         None => HttpResponse::BadRequest() 
