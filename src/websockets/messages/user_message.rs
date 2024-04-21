@@ -34,7 +34,9 @@ pub enum MessageType {
     Err,
     Info,
     Auth,
-    ItemClaim
+    ItemClaim,
+    ItemUnclaim,
+    StateRequest,
 }
 
 #[derive(Message)]

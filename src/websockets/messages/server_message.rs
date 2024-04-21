@@ -1,5 +1,6 @@
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
 use crate::websockets::actors::{connected_user::ConnectedUser, lobby::Lobby};
 use crate::structs::{receipt_item::ReceiptItem, lobby::LobbyReceipt};
 
@@ -40,14 +41,16 @@ pub struct ServerMessage {
 #[rtype(result = "()")]
 pub struct LobbyState {
     pub users: Vec<User>,
-    pub receipt: LobbyReceipt
+    pub receipt: LobbyReceipt,
+    pub claims: Vec<ItemClaim>
 }
 
 impl LobbyState {
-    pub fn new(users: Vec<User>, receipt: LobbyReceipt) -> LobbyState {
+    pub fn new(users: Vec<User>, receipt: LobbyReceipt, claims:Vec<ItemClaim>) -> LobbyState {
         LobbyState {
             users:users,
-            receipt: receipt
+            receipt: receipt,
+            claims: claims
         }
     }
 }
@@ -62,7 +65,7 @@ pub struct DUser {
     pub user_id:String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, FromRow)]
 pub struct ItemClaim {
     pub item_id: String,
     pub user_id: String

@@ -25,7 +25,7 @@ use std::collections::HashMap;
 
 use crate::structs::app_state::AppState;
 
-use crate::websockets::queries::get_receipt;
+use crate::websockets::queries::{get_receipt, claim_item, get_claims, unclaim_item};
 
 // definitions
 pub struct Lobby {
@@ -146,10 +146,11 @@ impl Handler<SocketMessage> for Lobby {
                                 let users = users;
                                 let lobby_id_moved = lobby_id.clone();
                                 let future = async move {
-                                    let receipt = get_receipt(somestate, lobby_id_moved).await;
+                                    let receipt = get_receipt(somestate.clone(), lobby_id_moved.clone()).await;
+                                    let claims = get_claims(somestate, lobby_id_moved).await;
                                     match receipt {
                                         Some(lobby_receipt) => {
-                                            let lobby_state = LobbyState::new(users, lobby_receipt);
+                                            let lobby_state = LobbyState::new(users, lobby_receipt, claims.unwrap());
                                             let message = ServerMessage {
                                                 context: String::from("lobby"),
                                                 code: String::from("state"),
@@ -189,10 +190,150 @@ impl Handler<SocketMessage> for Lobby {
                                 }]);
                                 let lobby_id_moved = lobby_id.clone();
                                 let future = async move {
-                                    let receipt = get_receipt(somestate, lobby_id_moved).await;
+                                    let receipt = get_receipt(somestate.clone(), lobby_id_moved.clone()).await;
+                                    let claims = get_claims(somestate, lobby_id_moved).await;
                                     match receipt {
                                         Some(lobby_receipt) => {
-                                            let lobby_state = LobbyState::new(users, lobby_receipt);
+                                            match claims {
+                                                Some(claim) => {
+                                                    let lobby_state = LobbyState::new(users, lobby_receipt, claim);
+                                                    let message = ServerMessage {
+                                                        context: String::from("lobby"),
+                                                        code: String::from("state"),
+                                                        data: MessageData::ServerState(lobby_state),
+                                                    };
+                                            msg.addr.do_send(message);
+                                                }
+                                                None => msg.addr.do_send(ServerMessage {
+                                                    context: String::from("lobby"),
+                                                    code: String::from("err"),
+                                                    data: MessageData::Message(
+                                                        "Problem retrieving item claims".to_string(),
+                                                    ),
+                                                }),
+                                            }
+                                        }
+                                        None => msg.addr.do_send(ServerMessage {
+                                            context: String::from("lobby"),
+                                            code: String::from("err"),
+                                            data: MessageData::Message(
+                                                "Problem retrieving lobby state".to_string(),
+                                            ),
+                                        }),
+                                    }
+                                };
+                                future.into_actor(self).spawn(ctx);
+                            }
+                        }
+                    }
+                    _ => (),
+                }
+            }, // end of join
+            MessageType::ItemClaim => { 
+                // find lobby id and message data
+                match self.rooms.get_mut(&msg.lobby_id) {
+                    Some(lobby) => {
+                        match msg.data {
+                            // forward claim message to lobby
+                            Value::String(item_id) => {
+                                for (_, user) in lobby.iter() {
+                                    user.addr.do_send(ServerMessage {
+                                        context: String::from("lobby"),
+                                        code: String::from("item_claim"),
+                                        data: MessageData::Claim(ItemClaim {
+                                            item_id: item_id.clone(),
+                                            user_id: msg.user_id.clone(),
+                                        }),
+                                    })
+                                }
+                                // add claim to db
+                                let somestate = self.state.clone();
+                                let future = async move {
+                                    let claim = claim_item(somestate, ItemClaim{
+                                        item_id:item_id.clone(),
+                                        user_id: msg.user_id.clone()
+                                    }, msg.lobby_id.clone()).await;
+                                    match claim {
+                                        Ok(_) => (),
+                                        Err(err) => msg.addr.do_send(ServerMessage{
+                                            context: String::from("error"),
+                                            code: String::from("database error"),
+                                            data: MessageData::Message(err.to_string())
+                                        })
+                                    }
+                                };
+                                future.into_actor(self).spawn(ctx);
+                            },
+                            _ => ()
+                        }
+                    },
+                    _ => ()
+                } 
+            }, // end of item claim
+            MessageType::ItemUnclaim => { 
+                // find lobby id and message data
+                match self.rooms.get_mut(&msg.lobby_id) {
+                    Some(lobby) => {
+                        match msg.data {
+                            // forward claim message to lobby
+                            Value::String(item_id) => {
+                                for (_, user) in lobby.iter() {
+                                    user.addr.do_send(ServerMessage {
+                                        context: String::from("lobby"),
+                                        code: String::from("item_unclaim"),
+                                        data: MessageData::Claim(ItemClaim {
+                                            item_id: item_id.clone(),
+                                            user_id: msg.user_id.clone(),
+                                        }),
+                                    })
+                                }
+                                // add claim to db
+                                let somestate = self.state.clone();
+                                let future = async move {
+                                    let claim = unclaim_item(somestate, ItemClaim{
+                                        item_id:item_id.clone(),
+                                        user_id: msg.user_id.clone()
+                                    }).await;
+                                    match claim {
+                                        Ok(_) => (),
+                                        Err(err) => msg.addr.do_send(ServerMessage{
+                                            context: String::from("error"),
+                                            code: String::from("database error"),
+                                            data: MessageData::Message(err.to_string())
+                                        })
+                                    }
+                                };
+                                future.into_actor(self).spawn(ctx);
+                            },
+                            _ => ()
+                        }
+                    },
+                    _ => ()
+                } 
+            }, // end of item unclaim
+            MessageType::StateRequest => {
+                match msg.data {
+                    Value::String(lobby_id) => {
+                        match self.rooms.get_mut(&lobby_id) {
+                            Some(lobby) => {
+                                let mut users: Vec<User> = Vec::new();
+                                for (_, user) in lobby.iter() {
+                                    // collect names of everyone in room
+                                    users.push(User {
+                                        username: user.username.clone(),
+                                        user_id: user.user_id.clone(),
+                                    });
+                                }
+
+                                let somestate = self.state.clone();
+                                let users = users;
+                                let lobby_id_moved = lobby_id.clone();
+                                let future = async move {
+                                    let receipt = get_receipt(somestate.clone(), lobby_id_moved.clone()).await;
+                                    let claims = get_claims(somestate, lobby_id_moved).await;
+                                    match receipt {
+                                        Some(lobby_receipt) => {
+                                            let lobby_state = LobbyState::new(users, lobby_receipt, claims.unwrap());
                                             let message = ServerMessage {
                                                 context: String::from("lobby"),
                                                 code: String::from("state"),
@@ -211,33 +352,12 @@ impl Handler<SocketMessage> for Lobby {
                                 };
                                 future.into_actor(self).spawn(ctx);
                             }
+                            None => ()
                         }
                     }
                     _ => (),
                 }
-            }
-            MessageType::ItemClaim => { 
-                match self.rooms.get_mut(&msg.lobby_id) {
-                    Some(lobby) => {
-                        match msg.data {
-                            Value::String(item_id) => {
-                                for (_, user) in lobby.iter() {
-                                    user.addr.do_send(ServerMessage {
-                                        context: String::from("lobby"),
-                                        code: String::from("item_claim"),
-                                        data: MessageData::Claim(ItemClaim {
-                                            item_id: item_id.clone(),
-                                            user_id: msg.user_id.clone(),
-                                        }),
-                                    })
-                                }
-                            },
-                            _ => ()
-                        }
-                    },
-                    _ => ()
-                } 
-            }, // end of item claim
+            }, // end of state request
             _ => msg.addr.do_send(ServerMessage {
                 context: String::from("error"),
                 code: String::from("not found"),
@@ -251,8 +371,11 @@ impl Handler<SocketMessage> for Lobby {
 impl Handler<Disconnect> for Lobby {
     type Result = ();
 
-    fn handle(&mut self, msg: Disconnect, _: &mut Context<Self>) {
+    fn handle(&mut self, msg: Disconnect, ctx: &mut Context<Self>) {
         self.sessions.remove(&msg.user_id);
+        let somestate = self.state.clone();
+
+
 
         for (_, user) in self.sessions.iter() {
             user.do_send(ServerMessage {
@@ -280,6 +403,17 @@ impl Handler<Disconnect> for Lobby {
             }
             None => (),
         }
+
+        
+        let future = async move {
+            let _ = sqlx::query(
+                "DELETE FROM item_claims WHERE user_id = $1"
+            )
+            .bind(msg.user_id.clone())
+            .execute(&somestate.db).await;
+        };
+        future.into_actor(self).spawn(ctx);
+
     }
 }
 
