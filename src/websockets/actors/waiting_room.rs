@@ -165,7 +165,7 @@ impl Handler<Disconnect> for WaitingRoom {
 impl Handler<RemoveItem> for WaitingRoom {
     type Result = ();
 
-    fn handle(&mut self, msg:RemoveItem, ctx: &mut Context<Self>) {
+    fn handle(&mut self, msg:RemoveItem, _ctx: &mut Context<Self>) {
         self.lobby.do_send(msg)
     }
 }

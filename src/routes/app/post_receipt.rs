@@ -9,16 +9,15 @@ use crate::structs::{
     app_state::AppState, lobby::{
         ItemModifier, Lobby, LobbyReceipt, ResturauntMenuItem, ResturauntReceipt, StateHeader,
         UpdateItem,
-    }, menu_item::MenuItem, receipt_item::ReceiptItem
+    }, receipt_item::ReceiptItem
 };
 
-use crate::websockets::{actors::waiting_room::WaitingRoom, messages::user_message::RemoveItem};
+use crate::websockets::messages::user_message::RemoveItem;
 use actix_web::{
     post, web,
     web::{Data, Json},
     HttpResponse, Responder,
 };
-use actix_web_actors::ws;
 use sqlx::Error;
 use uuid::Uuid;
 

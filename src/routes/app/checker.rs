@@ -1,7 +1,7 @@
 use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::{Password,PIN};
-use argonautica::{Hasher, Verifier};
+use argonautica::Verifier;
 
 // MARK: Password
 #[post("/password")]

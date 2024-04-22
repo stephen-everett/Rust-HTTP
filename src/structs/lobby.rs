@@ -47,3 +47,15 @@ pub struct UpdateItem {
     pub item_id: String,
     pub lobby_id: String
 }
+
+#[derive(Deserialize)]
+pub struct LobbyInvite {
+    pub friend_id: String,
+    pub lobby_id: String
+}
+
+#[derive(Serialize, FromRow)]
+pub struct IncomingLobbyInvite {
+    pub lobby_id: String,
+    pub friend_id: String,
+}

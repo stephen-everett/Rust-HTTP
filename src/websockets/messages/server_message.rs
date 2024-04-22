@@ -2,7 +2,7 @@ use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use crate::websockets::actors::{connected_user::ConnectedUser, lobby::Lobby};
-use crate::structs::{receipt_item::ReceiptItem, lobby::LobbyReceipt};
+use crate::structs::lobby::LobbyReceipt;
 
 #[derive(Message)]
 #[rtype(result = "()")]

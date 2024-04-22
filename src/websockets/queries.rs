@@ -2,7 +2,7 @@ use actix_web::web::Data;
 use sqlx::FromRow;
 use crate::{
     structs::{
-        app_state::AppState, lobby::LobbyReceipt, receipt_item:: ReceiptItem
+        app_state::AppState, lobby::LobbyReceipt
     },
     routes::app::post_receipt::{get_receipt_items, resolve_header, get_mods},
     websockets::messages::server_message::ItemClaim
