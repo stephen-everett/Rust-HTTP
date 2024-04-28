@@ -86,7 +86,7 @@ async fn decline_invite(state: Data<AppState>, claims: Option<ReqData<TokenClaim
 async fn get_incoming_invites(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) -> impl Responder {
     match claims {
         Some(claims) => {
-            match sqlx::query_as::<_,IncomingLobbyInvite>("SELECT lobby_id, friend_id FROM lobby_invites WHERE user_id = $1")
+            match sqlx::query_as::<_,IncomingLobbyInvite>("SELECT lobby_id, from_id FROM lobby_invites WHERE user_id = $1")
                 .bind(&claims.user_id.to_string())
                 .fetch_all(&state.db)
                 .await {
@@ -102,7 +102,7 @@ async fn get_incoming_invites(state: Data<AppState>, claims: Option<ReqData<Toke
 async fn get_outgoing_invites(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) -> impl Responder {
     match claims {
         Some(claims) => {
-            match sqlx::query_as::<_,IncomingLobbyInvite>("SELECT lobby_id, friend_id FROM lobby_invites WHERE friend_id = $1")
+            match sqlx::query_as::<_,IncomingLobbyInvite>("SELECT lobby_id, friend_id FROM lobby_invites WHERE from_id = $1")
                 .bind(&claims.user_id.to_string())
                 .fetch_all(&state.db)
                 .await {
