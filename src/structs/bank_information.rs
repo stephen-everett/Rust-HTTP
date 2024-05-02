@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
+use actix_web::FromRequest;
 // use crate::structs::user::User;
 
 /// Struct to get the bank information for the user to send it to the server.

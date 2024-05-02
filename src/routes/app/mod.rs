@@ -9,3 +9,4 @@ pub mod get_profile_pic;
 pub mod checker;
 pub mod force_server;
 pub mod pos_things;
+pub mod bank_calls;
