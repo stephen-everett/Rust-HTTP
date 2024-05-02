@@ -1,14 +1,29 @@
-use crate::structs::app_state::AppState;
+use std::net::TcpStream;
+use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::bank_information::BankInformation;
-use actix::dev::channel::AddressSender;
-use actix_web::{post, web::Data, Responder, HttpResponse};
 
+struct ResponseMessage{
+    header:String
+}
 
+async fn charge_bank(state:Data<AppState>,token:Option<ReqData<TokenClaims>>,body:BankInformation)-> impl Responder{
+    match token {
+        Some(token) => {
+            let mut bank_connection = TcpStream::connect("127.0.0.1:8000").unwrap();
+            let send_bank_charge = serde_json::to_string(&body).unwrap();
+            let _ = bank_connection.write(send_bank_charge.as_bytes())?;
+            let response = bank_connection.read_to_string().unwrap();
 
-#[post("/call_bank")]
-async fn call_bank(state:Data<AppState>,body:BankInformation) -> impl Responder{
-
-    let res = AddressSender::new(&body).send(&state).await;
-    HttpResponse::Ok().json(res)
+            if response == "200"{
+                HttpResponse::Ok().json("success")
+            } else {
+                HttpResponse::InternalServerError().json("failure")
+            }
+            
+        },
+        None => HttpResponse::InternalServerError().json("Something was wrong with token")
+        
+    }
 
 }
