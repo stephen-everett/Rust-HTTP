@@ -601,6 +601,7 @@ impl Handler<RemoveItem> for Lobby {
     fn handle(&mut self, msg: RemoveItem, _: &mut Context<Self>) {
         match self.rooms.get_mut(&msg.lobby_id) {
             Some(lobby) => {
+                lobby.items.remove(&msg.item_id);
                 for (_, user) in lobby.users.iter() {
                     user.addr.do_send(ServerMessage {
                         context: String::from("lobby"),
