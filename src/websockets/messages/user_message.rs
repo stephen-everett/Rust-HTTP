@@ -34,6 +34,9 @@ pub enum MessageType {
     ItemClaim,
     ItemUnclaim,
     StateRequest,
+    Checkout,
+    LeaveCheckout,
+    Pay
 }
 
 #[derive(Message)]

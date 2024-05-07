@@ -31,11 +31,12 @@ use hello_rocket::routes::{
             get_incoming_friends, get_outgoing_friends, send_friend_request,
         },
         get_user_info::{other_user, user_info},
-        post_receipt::{get_receipt, post_receipt, delete_item, update_menu_item},
+        post_receipt::{http_get_receipt, post_receipt, delete_item, update_menu_item},
         search::{search_user, search_user_bank, search_user_fname, search_user_lname},
         update_user::{
             update_email, update_first_name, update_last_name, update_password,
             update_phone_number, update_picture, update_pin, update_username,
+            set_bank, get_bank
         },
         get_profile_pic::user_pic,
         force_server::hash_pins,
@@ -98,7 +99,7 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("/pos")
                             .service(post_receipt)
-                            .service(get_receipt)
+                            .service(http_get_receipt)
                             .service(delete_item)
                             .service(update_menu_item)
                         )
@@ -110,6 +111,8 @@ async fn main() -> std::io::Result<()> {
                             .service(delete_bank)
                             .service(other_user)
                             .service(user_pic)
+                            .service(set_bank)
+                            .service(get_bank)
                             .service(web::scope("/check")
                                          .service(is_pin)
                                          .service(is_password),

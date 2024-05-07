@@ -10,3 +10,4 @@ pub mod checker;
 pub mod force_server;
 pub mod pos_things;
 pub mod lobby_invite;
+pub mod checkout;

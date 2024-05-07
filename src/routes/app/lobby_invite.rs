@@ -102,7 +102,7 @@ async fn get_incoming_invites(state: Data<AppState>, claims: Option<ReqData<Toke
 async fn get_outgoing_invites(state: Data<AppState>, claims: Option<ReqData<TokenClaims>>) -> impl Responder {
     match claims {
         Some(claims) => {
-            match sqlx::query_as::<_,IncomingLobbyInvite>("SELECT lobby_id, from_id AS friend_id FROM lobby_invites WHERE from_id = $1")
+            match sqlx::query_as::<_,IncomingLobbyInvite>("SELECT lobby_id, user_id AS friend_id FROM lobby_invites WHERE from_id = $1")
                 .bind(&claims.user_id.to_string())
                 .fetch_all(&state.db)
                 .await {

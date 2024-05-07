@@ -93,3 +93,30 @@ pub async fn unclaim_item(state:Data<AppState>, claim:ItemClaim) -> Result<Strin
         Err(err) => Err(err)
     }
 }
+#[derive(FromRow)]
+pub struct LobbyCount {
+    pub count: i64
+}
+pub async fn check_lobby(state:Data<AppState>, lobby_id:String) -> bool {
+    match sqlx::query_as::<_, LobbyCount>(
+        "SELECT COUNT(*) FROM lobbies WHERE lobby_id = $1"
+    )
+    .bind(lobby_id.clone())
+    .fetch_one(&state.db)
+    .await {
+        Ok(count) => count.count > 0,
+        Err(_) => false
+    }
+}
+
+pub async fn delete_lobby(state:Data<AppState>, lobby_id:String) -> bool {
+    match sqlx::query(
+        "DELETE FROM lobbies WHERE lobby_id = $1"
+    )
+    .bind(lobby_id.clone())
+    .execute(&state.db)
+    .await {
+        Ok(_) => true,
+        Err(_) => false
+    }
+}

@@ -1,8 +1,12 @@
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
-use crate::websockets::actors::{connected_user::ConnectedUser, lobby::Lobby};
+use crate::websockets::actors::{connected_user::ConnectedUser, lobby::{Lobby, LobbyItem}};
 use crate::structs::lobby::LobbyReceipt;
+use actix_web::web::Data;
+use crate::structs::app_state::AppState; 
+
+
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -55,7 +59,7 @@ impl LobbyState {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct User {
     pub user_id:String,
     pub username: String,
@@ -71,6 +75,17 @@ pub struct ItemClaim {
     pub user_id: String
 }
 
+#[derive(Serialize)]
+pub struct NewLobbyState {
+    pub users: Vec<User>,
+    pub items: Vec<LobbyItem>
+}
+
+#[derive(Serialize)]
+pub struct CheckoutItems {
+    pub user_id: String,
+    pub receipt_item_ids: Vec<String>
+}
 
 #[derive(Serialize)]
 pub enum MessageData {
@@ -78,5 +93,13 @@ pub enum MessageData {
     UserData(User),
     DisconnectedUser(DUser),
     Message(String),
-    Claim(ItemClaim)
+    Claim(ItemClaim),
+    NewServerState(NewLobbyState),
+    UserCheckout(CheckoutItems)
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct StartState {
+    pub state: Data<AppState>
 }

@@ -28,14 +28,14 @@ pub struct ItemModifier {
     pub receipt_item_id: Option<String>
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct LobbyReceipt {
     pub header: StateHeader,
     pub menu_items: Vec<ReceiptItem>,
     pub modifiers: Vec<ItemModifier>
 }
 
-#[derive(FromRow, Serialize, Debug)]
+#[derive(FromRow, Serialize, Debug,Clone)]
 pub struct StateHeader {
     pub res_id: String,
     pub lobby_id: String,

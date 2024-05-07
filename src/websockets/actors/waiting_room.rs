@@ -17,15 +17,17 @@ use jwt::VerifyWithKey;
 
 use crate::{
     websockets::{
-        actors::{connected_user::ConnectedUser, lobby::Lobby},
+        actors::{connected_user::ConnectedUser, lobby::{Lobby, CreateLobby}},
         messages::{
             user_message::{SocketMessage, MessageType, Connect, Disconnect, RemoveItem},
-            server_message::{Authorized, AuthorizedUser, ServerMessage, MessageData}
+            server_message::{Authorized, AuthorizedUser, ServerMessage, MessageData, StartState}
         },
         queries::get_username,
     },
     structs::app_state::{TokenClaims, AppState}
 };
+
+use actix_web::web::Data;
 
 /*
     Definitions
@@ -40,6 +42,18 @@ pub struct WaitingRoom {
 
 impl Actor for WaitingRoom {
     type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Context<Self>){
+        let new_state = AppState {
+            db: self.state.db.clone(),
+            ws_server: Some(ctx.address())
+        };
+
+        self.state = Data::new(new_state);
+        self.lobby.do_send(StartState {
+            state: self.state.clone()
+        })
+    }
 }
 
 impl WaitingRoom {
@@ -127,7 +141,8 @@ impl Handler<SocketMessage> for WaitingRoom {
                             data: MessageData::Message(String::from("👉👈 wrong data"))
                         })
                 }
-            }
+            },
+            //MessageType::Join => self.lobby.do_send(msg),
             _ => msg.addr.do_send(ServerMessage {
                     context: String::from("error"),
                     code: String::from("auth"),
@@ -166,6 +181,14 @@ impl Handler<RemoveItem> for WaitingRoom {
     type Result = ();
 
     fn handle(&mut self, msg:RemoveItem, _ctx: &mut Context<Self>) {
+        self.lobby.do_send(msg)
+    }
+}
+
+impl Handler<CreateLobby> for WaitingRoom {
+    type Result = ();
+
+    fn handle(&mut self, msg:CreateLobby, _ctx: &mut Context<Self>) {
         self.lobby.do_send(msg)
     }
 }
