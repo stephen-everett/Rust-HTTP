@@ -274,18 +274,18 @@ async fn update_menu_item(state:Data<AppState>, menu_item:Json<ItemModifier>)-> 
     
 // }
 
-#[post("/add_modifier")]
-pub async fn add_modifier(state: Data<AppState>, user: Json<AddUser>) -> impl Responder {
-    match sqlx::query(
-        "INSERT INTO item_modifiers (modifier_name, modifier_price, receipt_item_id) VALUES ($1, $2, $3)",
-    )
-    .bind(user.name.clone())
-    .bind(user.price.clone())
-    .bind(user.receipt_item_id.clone())
-    .execute(&state.db)
-    .await
-    {
-        Ok(_) => HttpResponse::Ok().json("Item modifier added"),
-        Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
-    }
-}
+// #[post("/add_modifier")]
+// pub async fn add_modifier(state: Data<AppState>, user: Json<AddUser>) -> impl Responder {
+//     match sqlx::query(
+//         "INSERT INTO item_modifiers (modifier_name, modifier_price, receipt_item_id) VALUES ($1, $2, $3)",
+//     )
+//     .bind(user.name.clone())
+//     .bind(user.price.clone())
+//     .bind(user.receipt_item_id.clone())
+//     .execute(&state.db)
+//     .await
+//     {
+//         Ok(_) => HttpResponse::Ok().json("Item modifier added"),
+//         Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
+//     }
+// }
