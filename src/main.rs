@@ -43,7 +43,7 @@ use hello_rocket::routes::{
         get_profile_pic::user_pic,
         force_server::hash_pins,
         checker::{is_password,is_pin},
-        bank_calls::call_bank,
+        bank_calls::charge_bank
     },
     auth::{login::basic_auth, register::create_user},
     debug::{get_all_users, test_auth, test_connection},
@@ -124,7 +124,7 @@ async fn main() -> std::io::Result<()> {
                             .service(delete_bank)
                             .service(other_user)
                             .service(user_pic)
-                            .service(call_bank)
+                            .service(charge_bank)
                             .service(web::scope("/check")
                                          .service(is_pin)
                                          .service(is_password),
