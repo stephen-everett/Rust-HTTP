@@ -2,6 +2,7 @@ use std::{io::{Read, Write}, net::TcpStream};
 use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::bank_information::BankInformation;
+use std::str;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct ResponseMessage{
@@ -17,10 +18,15 @@ async fn charge_bank(_state:Data<AppState>,token:Option<ReqData<TokenClaims>>,bo
             let send_bank_charge = serde_json::to_string(&body).unwrap();
             let mut buf = String::new();
             let _ = bank_connection.write_all(send_bank_charge.as_bytes()).unwrap();
+            // let response: usize = bank_connection.read(&mut [0;1024]).unwrap();
             let response = bank_connection.read_to_string(&mut buf).unwrap();
+            response = str::from_utf8(&buf.as_bytes()).unwrap().parse().unwrap();
+
+            
             tracing::info!("{:?}", response);
+            // tracing::info!("{:?}", str::from_utf8(&buf.as_bytes()).unwrap());
             // let _ = bank_connection.write(send_bank_charge.as_bytes()).unwrap();
-            // let response = bank_connection.read(&mut [0;1024]).unwrap();
+           
 
             if &response.to_string() == "OK" {
                 tracing::info!("Success");
