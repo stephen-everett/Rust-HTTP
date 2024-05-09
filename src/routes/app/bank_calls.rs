@@ -20,15 +20,16 @@ async fn charge_bank(_state:Data<AppState>,token:Option<ReqData<TokenClaims>>,bo
             let _ = bank_connection.write_all(send_bank_charge.as_bytes()).unwrap();
             // let response: usize = bank_connection.read(&mut [0;1024]).unwrap();
             let response = bank_connection.read_to_string(&mut buf).unwrap();
-            response = str::from_utf8(&buf.as_bytes()).unwrap().parse().unwrap();
+            let answer:String = str::from_utf8(&buf.as_bytes()).unwrap().parse().unwrap();
 
             
             tracing::info!("{:?}", response);
+            tracing::info!("{:?} responsed from bank server", answer);
             // tracing::info!("{:?}", str::from_utf8(&buf.as_bytes()).unwrap());
             // let _ = bank_connection.write(send_bank_charge.as_bytes()).unwrap();
            
 
-            if &response.to_string() == "OK" {
+            if &answer == "OK" {
                 tracing::info!("Success");
                 HttpResponse::Ok().json("success")
             } else {
