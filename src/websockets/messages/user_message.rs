@@ -3,10 +3,7 @@ use serde_json::Value;
 use actix::Message as ActixMessage;
 use actix::prelude::*;
 
-use crate::{
-    websockets::actors::connected_user::ConnectedUser,
-    structs::lobby::UpdateItem
-};
+use crate::websockets::actors::connected_user::ConnectedUser;
 
 
 #[derive(Serialize, Deserialize, ActixMessage)]
@@ -34,7 +31,12 @@ pub enum MessageType {
     Err,
     Info,
     Auth,
-    ItemClaim
+    ItemClaim,
+    ItemUnclaim,
+    StateRequest,
+    Checkout,
+    LeaveCheckout,
+    Pay
 }
 
 #[derive(Message)]

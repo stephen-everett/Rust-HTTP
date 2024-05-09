@@ -1,8 +1,14 @@
-use actix_web::{ post, web::{Data, Json, ReqData}, HttpResponse, Responder};
-use crate::structs::{app_state::{AppState, TokenClaims},
-                     user::{PIN,FirstName,LastName,PhoneNumber,
-                            Email,Password,Username,
-                            Picture}};
+use actix_web::{ post, get, web::{Data, Json, ReqData}, HttpResponse, Responder};
+use crate::structs::{
+    app_state::{AppState, TokenClaims},
+    user::{
+            PIN,FirstName,LastName,PhoneNumber,
+            Email,Password,Username,
+            Picture
+    },
+    bank_information::BankInformation
+                        
+};
 use argonautica::Hasher;
 use crate::routes::auth::register::{unique_phone,unique_email,unique_username};
 
@@ -184,6 +190,43 @@ async fn update_picture(state: Data<AppState>, token: Option<ReqData<TokenClaims
                .execute(&state.db)
                .await{
                 Ok(_) => HttpResponse::Ok().json("picture changed"),
+                Err(e)=> HttpResponse::InternalServerError().json(format!("{:?}",e))
+               }
+        },
+        None => HttpResponse::InternalServerError().json("Something was wrong with token")
+    }
+}
+
+#[post("/set_bank")]
+async fn set_bank(state: Data<AppState>, token: Option<ReqData<TokenClaims>>, body:Json<BankInformation>)-> impl Responder{
+    match token{
+        Some(token) => {
+           let set_bank = "INSERT INTO banks(user_id, bank_name, account_number, routing_number) VALUES($1,$2,$3, $4)";
+           match sqlx::query(set_bank) 
+               .bind(token.user_id.clone())
+               .bind(body.bank_name.clone())
+               .bind(body.account_number.clone())
+               .bind(body.routing_number.clone())
+               .execute(&state.db)
+               .await{
+                Ok(_) => HttpResponse::Ok().json("Bank Set"),
+                Err(e)=> HttpResponse::InternalServerError().json(format!("{:?}",e))
+               }
+        },
+        None => HttpResponse::InternalServerError().json("Something was wrong with token")
+    }
+}
+
+#[get("/get_bank")]
+async fn get_bank(state: Data<AppState>, token: Option<ReqData<TokenClaims>>)-> impl Responder{
+    match token{
+        Some(token) => {
+           let get_bank = "SELECT bank_name, routing_number, account_number FROM banks WHERE user_id = $1";
+           match sqlx::query_as::<_, BankInformation>(get_bank) 
+               .bind(token.user_id.clone())
+               .fetch_one(&state.db)
+               .await{
+                Ok(bank_info) => HttpResponse::Ok().json(bank_info),
                 Err(e)=> HttpResponse::InternalServerError().json(format!("{:?}",e))
                }
         },

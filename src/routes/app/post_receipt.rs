@@ -7,20 +7,22 @@
 
 use crate::structs::{
     app_state::AppState, lobby::{
-        ItemModifier, Lobby, LobbyReceipt, ResturauntMenuItem, ResturauntReceipt, StateHeader,
-        UpdateItem,
-    }, menu_item::MenuItem, receipt_item::ReceiptItem
+        ItemModifier, Lobby, LobbyReceipt, ResturauntMenuItem, ResturauntReceipt, StateHeader, UpdateItem
+    }, receipt_item::ReceiptItem
 };
 
-use crate::websockets::{actors::waiting_room::WaitingRoom, messages::user_message::RemoveItem};
+use crate::websockets::messages::user_message::RemoveItem;
+use crate::websockets::queries::{get_receipt, get_claims};
+use crate::websockets::actors::lobby::{LobbyItem, LobbyItemModifier, ItemSplit, Item, CreateLobby};
 use actix_web::{
     post, web,
     web::{Data, Json},
     HttpResponse, Responder,
 };
-use actix_web_actors::ws;
 use sqlx::Error;
 use uuid::Uuid;
+
+use std::collections::HashMap;
 
 // retrieve lobby number, insert menu items into their respective table, and then create the realationship between
 // menu item and lobby by inserting items into receipt_item table
@@ -47,7 +49,10 @@ pub async fn post_receipt(
                     {
                         Some(error) => HttpResponse::InternalServerError()
                             .json(format!("Problem inserting menu items {:?}", error)),
-                        None => HttpResponse::Ok().json(lobby_id),
+                        None => {
+                            create_lobby_room(state.clone(), lobby_id.clone()).await;
+                            HttpResponse::Ok().json(lobby_id)
+                        }
                     }
                 }
                 Err(err) => HttpResponse::InternalServerError().json(err.to_string()),
@@ -57,6 +62,73 @@ pub async fn post_receipt(
             HttpResponse::InternalServerError().json(format!("Problem creating lobby {:?}", err))
         }
     }
+}
+
+pub async fn create_lobby_room(state: Data<AppState>, lobby_id: String) {
+    let receipt = get_receipt(state.clone(), lobby_id.clone()).await;
+    let claims = get_claims(state.clone(), lobby_id.clone()).await;
+
+    match receipt {
+        Some(lobby_receipt) => {
+            match claims {
+                Some(claim) => {
+                    let mut temp_items: HashMap<String, Item> = HashMap::new();
+                    for item in lobby_receipt.menu_items {
+                        let mut running_price = item.price;
+                        let mut total_price = running_price;
+                        let mut temp_mods : Vec<LobbyItemModifier> = Vec::new();
+
+                        for modifier in &lobby_receipt.modifiers {
+                            match &modifier.receipt_item_id {
+                                Some(id) => {
+                                    if *id == item.receipt_item_id {
+                                        temp_mods.push(LobbyItemModifier {
+                                            modifier_name: modifier.name.clone(),
+                                            modifier_price: modifier.price,
+                                        });
+                                        running_price += modifier.price;
+                                        total_price = running_price;
+                                    }
+                                },
+                                None => ()
+                            }
+                        }
+
+                        let temp_lobby_item = LobbyItem {
+                            receipt_item: item,
+                            modifiers: temp_mods,
+                            claims: Vec::new(),
+                            in_checkout: Vec::new(),
+                            total_price: total_price
+                        };
+                        let temp_split = ItemSplit {
+                            split: Vec::new(),
+                            split_index: 0,
+                            price_balance: total_price
+                        };
+
+                        let temp_item = Item {
+                            item:temp_lobby_item,
+                            split: temp_split
+                        };
+                        temp_items.insert(temp_item.item.receipt_item.receipt_item_id.clone(), temp_item.clone());
+                    }
+                    match &state.ws_server {
+                        Some(server) => {
+                            server.do_send(CreateLobby{
+                                lobby_id:lobby_id.clone(),
+                                items:temp_items.clone()
+                            })
+                        
+                        },
+                        None => println!("Something went wrong getting ws_server")
+                    }
+                },
+                None => ()
+            }
+        },
+        None => (),
+    } 
 }
 // create a new lobby and return lobby number
 pub async fn create_new_lobby(state: Data<AppState>) -> Result<String, Error> {
@@ -149,7 +221,7 @@ pub async fn insert_menu_items(
 
 // return all menu items associated with a given lobby number
 #[post("/get_receipt")]
-pub async fn get_receipt(state: Data<AppState>, body: Json<Lobby>) -> impl Responder {
+pub async fn http_get_receipt(state: Data<AppState>, body: Json<Lobby>) -> impl Responder {
     match get_receipt_items(state.clone(), body.lobby_id.clone()).await {
         Some(receipt_items) => match resolve_header(state.clone(), body.lobby_id.clone()).await {
             Some(header) => match get_mods(state, body.lobby_id.clone()).await {

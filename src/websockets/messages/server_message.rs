@@ -1,7 +1,12 @@
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
-use crate::websockets::actors::{connected_user::ConnectedUser, lobby::Lobby};
-use crate::structs::{receipt_item::ReceiptItem, lobby::LobbyReceipt};
+use sqlx::prelude::FromRow;
+use crate::websockets::actors::{connected_user::ConnectedUser, lobby::{Lobby, LobbyItem}};
+use crate::structs::lobby::LobbyReceipt;
+use actix_web::web::Data;
+use crate::structs::app_state::AppState; 
+
+
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -40,19 +45,21 @@ pub struct ServerMessage {
 #[rtype(result = "()")]
 pub struct LobbyState {
     pub users: Vec<User>,
-    pub receipt: LobbyReceipt
+    pub receipt: LobbyReceipt,
+    pub claims: Vec<ItemClaim>
 }
 
 impl LobbyState {
-    pub fn new(users: Vec<User>, receipt: LobbyReceipt) -> LobbyState {
+    pub fn new(users: Vec<User>, receipt: LobbyReceipt, claims:Vec<ItemClaim>) -> LobbyState {
         LobbyState {
             users:users,
-            receipt: receipt
+            receipt: receipt,
+            claims: claims
         }
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct User {
     pub user_id:String,
     pub username: String,
@@ -62,12 +69,23 @@ pub struct DUser {
     pub user_id:String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, FromRow)]
 pub struct ItemClaim {
     pub item_id: String,
     pub user_id: String
 }
 
+#[derive(Serialize)]
+pub struct NewLobbyState {
+    pub users: Vec<User>,
+    pub items: Vec<LobbyItem>
+}
+
+#[derive(Serialize)]
+pub struct CheckoutItems {
+    pub user_id: String,
+    pub receipt_item_ids: Vec<String>
+}
 
 #[derive(Serialize)]
 pub enum MessageData {
@@ -75,5 +93,13 @@ pub enum MessageData {
     UserData(User),
     DisconnectedUser(DUser),
     Message(String),
-    Claim(ItemClaim)
+    Claim(ItemClaim),
+    NewServerState(NewLobbyState),
+    UserCheckout(CheckoutItems)
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct StartState {
+    pub state: Data<AppState>
 }
