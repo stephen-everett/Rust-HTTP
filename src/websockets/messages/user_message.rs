@@ -1,3 +1,8 @@
+/*
+    These are all messages that a user can send to the websocket server
+ */
+
+
 use serde::{Serialize,Deserialize};
 use serde_json::Value;
 use actix::Message as ActixMessage;

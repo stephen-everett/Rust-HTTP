@@ -1,3 +1,7 @@
+/*
+    These are strucutres used for lobby definitions
+ */
+
 use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
 use crate::structs::receipt_item::ReceiptItem;

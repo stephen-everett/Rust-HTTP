@@ -1,3 +1,6 @@
+/*
+    This is where a Websocket user is defined
+ */
 use serde::Serialize;
 use sqlx::FromRow;
 

@@ -1,3 +1,7 @@
+/*
+    This is where you can add stuff to user accounts
+ */
+
 use actix_web::{ post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::bank_information::BankInformation;

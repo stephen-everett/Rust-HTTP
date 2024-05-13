@@ -1,3 +1,7 @@
+/*
+This is another definition for MenuItem
+ */
+
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]

@@ -1,3 +1,8 @@
+/*
+    These are queries used for websockets
+ */
+
+
 use actix_web::web::Data;
 use sqlx::FromRow;
 use crate::{

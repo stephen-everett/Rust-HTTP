@@ -1,3 +1,7 @@
+/*
+    This is where receipt items are defined
+ */
+
 use serde::Serialize;
 use sqlx::FromRow;
 

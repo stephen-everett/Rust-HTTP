@@ -1,3 +1,7 @@
+/*
+    This is used by the POS to update menu items
+ */
+
 use crate::structs::menu_item::MenuItem;
 use crate::structs::app_state::AppState;
 use actix_web::{  

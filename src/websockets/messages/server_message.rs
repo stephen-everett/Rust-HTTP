@@ -1,3 +1,7 @@
+/*
+    These are the messages that the server sends to the user
+ */
+
 use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;

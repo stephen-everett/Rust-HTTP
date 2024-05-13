@@ -1,3 +1,7 @@
+/*
+    This validator validates a JWT given by the user
+ */
+
 use actix_web::{dev::ServiceRequest, error::Error,HttpMessage};
 use actix_web_httpauth::extractors::{
         bearer::{self, BearerAuth},

@@ -1,3 +1,7 @@
+/*
+    Endpoint used for checkout
+ */
+
 use actix_web::{get, post, web::{Data, ReqData, Json}, Responder, HttpResponse};
 use crate::structs::{
     app_state::{AppState, TokenClaims},

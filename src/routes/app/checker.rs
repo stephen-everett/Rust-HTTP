@@ -1,3 +1,7 @@
+/*
+    These are used to check the validity of passwords and pins
+ */
+
 use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};
 use crate::structs::user::{Password,PIN};

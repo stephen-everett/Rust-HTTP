@@ -1,3 +1,6 @@
+/*
+    These are generic messages used for some API calls
+ */
 use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
 

@@ -1,3 +1,7 @@
+/*
+    These are some debug endpoints
+ */
+
 use actix_web::{ get,Responder, HttpResponse, web::Data};
 use crate::structs::{user::UserNoPassword, app_state::AppState};
 

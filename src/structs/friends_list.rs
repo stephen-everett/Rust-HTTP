@@ -1,3 +1,8 @@
+
+/*
+    These are structures used for friends list and friends requests
+ */
+
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 

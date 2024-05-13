@@ -1,3 +1,7 @@
+/*
+    Search API endpoints
+ */
+
 use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 
 use serde::Deserialize;

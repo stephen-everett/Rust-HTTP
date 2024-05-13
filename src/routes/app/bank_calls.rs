@@ -1,3 +1,7 @@
+/*
+    This is where the bank is called and interacted with
+ */
+
 use std::{io::{Read, Write}, net::TcpStream};
 use actix_web::{post, web::{Data, Json, ReqData}, HttpResponse, Responder};
 use crate::structs::app_state::{AppState, TokenClaims};

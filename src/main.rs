@@ -1,4 +1,10 @@
 /*
+    Authors: Stephen Everett, Luis Ortiz
+
+    This is the main file. It sets up the server and listens on port 6000, and establishes all of the endpoints
+ */
+
+/*
    Third Party Module
 */
 // actix
